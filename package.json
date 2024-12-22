@@ -1,38 +1,45 @@
 {
-  "name": "win-dash",
+  "name": "electron-quick-start-typescript",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
+  "description": "A minimal Electron application written with Typescript",
   "build": {
     "appId": "com.example.app",
     "productName": "WinDash",
-    "files": [
-      "**/*"
-    ],
-    "mac": {
-      "category": "public.app-category.utilities",
-      "target": "dmg"
-    },
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis"
       ]
     },
-    "afterSign": "afterSign.js"
+    "files": [
+      "dist/**/*",
+      "src/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "output": "build"
+    }
   },
+  "main": "dist/main.js",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc && xcopy src\\widgets dist\\widgets /E /I /Y",
+    "watch": "tsc -w",
+    "lint": "eslint -c .eslintrc --ext .ts ./src",
+    "start": "npm run build && electron ./dist/main.js",
+    "dist": "npm run build && electron-builder && python -m castlabs_evs.vmp sign-pkg ./build/win-unpacked/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
     "electron": "github:castlabs/electron-releases#v32.1.0+wvcus",
     "electron-builder": "^25.0.5",
-    "electron-reloader": "^1.2.3"
+    "eslint": "^7.32.0",
+    "typescript": "^4.8.3"
   },
   "dependencies": {
     "@ghostery/adblocker-electron": "^2.3.1",
