@@ -81,6 +81,7 @@ app.whenReady().then(async () => {
         const view = new WebContentsView();
         win.contentView.addChildView(view);
         view.webContents.loadURL(url);
+        
         view.setBounds({ x, y, width: viewWidth, height: viewHeight });
 
         if (touchEnabled) {
@@ -97,7 +98,7 @@ app.whenReady().then(async () => {
 
     createView('https://www.audible.co.uk/webplayer?asin=B0BS735TN2', padding, padding);
     createView('https://open.spotify.com', padding, viewHeight + padding * 2, true); // Enable touch for Spotify
-    createView('https://www.youtube.com', viewWidth + padding * 2, padding);
+    createView(path.join(__dirname, 'buienradar.html'), viewWidth + padding * 2, padding);
     createView('https://www.google.com/', viewWidth + padding * 2, viewHeight + padding * 2);
 
     win.on('closed', () => {
