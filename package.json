@@ -1,0 +1,38 @@
+{
+  "name": "win-dash",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "build": {
+    "appId": "com.example.app",
+    "productName": "WinDash",
+    "files": [
+      "**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "dmg"
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "afterSign": "afterSign.js"
+  },
+  "scripts": {
+    "start": "electron .",
+  "build": "electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "github:castlabs/electron-releases#v32.1.0+wvcus",
+    "electron-builder": "^25.0.5",
+    "electron-reloader": "^1.2.3"
+  },
+  "dependencies": {
+    "@ghostery/adblocker-electron": "^2.3.1",
+    "cross-fetch": "^4.1.0"
+  }
+}
