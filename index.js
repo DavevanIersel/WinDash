@@ -1,9 +1,14 @@
 const { app, BaseWindow, WebContentsView, session, components, ipcMain } = require('electron');
 const { ElectronBlocker } = require('@ghostery/adblocker-electron');
 const fetch = require('cross-fetch');
+const path = require('path');
+const fs = require('fs');
 
 let win;
 let originalUserAgent;
+
+const cssFilePath = path.join(__dirname, 'styles.css');
+const cssContent = fs.readFileSync(cssFilePath, 'utf-8');
 
 app.whenReady().then(async () => {
     await components.whenReady();
@@ -44,6 +49,7 @@ app.whenReady().then(async () => {
             allowRunningInsecureContent: true,
             experimentalFeatures: true, 
             partition: 'persist:session', 
+            enablePreferredTouchMode: true,
         }
     });
 
@@ -51,26 +57,48 @@ app.whenReady().then(async () => {
     const viewWidth = (win.getBounds().width / 2) - padding - padding;
     const viewHeight = (win.getBounds().height / 2) - padding - padding;
 
-    const view1 = new WebContentsView();
-    win.contentView.addChildView(view1);
-    view1.webContents.loadURL('https://www.audible.co.uk/webplayer?asin=B0BS735TN2');
-    view1.setBounds({ x: padding, y: padding, width: viewWidth, height: viewHeight });
+    const injectCSS = (webContents) => {
+        const cssPath = path.join(__dirname, 'styles.css');
+        const cssContent = fs.readFileSync(cssPath, 'utf-8');
 
-    const view2 = new WebContentsView();
-    win.contentView.addChildView(view2);
-    view2.webContents.loadURL('https://open.spotify.com');
-    view2.setBounds({ x: padding, y: viewHeight + padding * 2, width: viewWidth, height: viewHeight });
-    // view2.webContents.openDevTools();
+        webContents.insertCSS(cssContent)
+            .then(() => {
+                console.log('CSS injected successfully.');
+            })
+            .catch((err) => {
+                console.error('Error injecting CSS:', err);
+            });
+    };
 
-    const view3 = new WebContentsView();
-    win.contentView.addChildView(view3);
-    view3.webContents.loadURL('https://www.youtube.com');
-    view3.setBounds({ x: viewWidth + padding * 2, y: padding, width: viewWidth, height: viewHeight });
+    const enableTouchEmulation = (webContents) => {
+        webContents.debugger.attach('1.3'); 
+        webContents.debugger.sendCommand('Emulation.setEmitTouchEventsForMouse', { 
+            enabled: true, 
+          });
+    };
 
-    const view4 = new WebContentsView();
-    win.contentView.addChildView(view4);
-    view4.webContents.loadURL('https://www.google.com/');
-    view4.setBounds({ x: viewWidth + padding * 2, y: viewHeight + padding * 2, width: viewWidth, height: viewHeight });
+    const createView = (url, x, y, touchEnabled = false) => {
+        const view = new WebContentsView();
+        win.contentView.addChildView(view);
+        view.webContents.loadURL(url);
+        view.setBounds({ x, y, width: viewWidth, height: viewHeight });
+
+        if (touchEnabled) {
+            view.webContents.on('did-finish-load', () => {
+                enableTouchEmulation(view.webContents);
+            });
+        }
+        view.webContents.on('did-finish-load', () => {
+            injectCSS(view.webContents); 
+        });
+
+        return view;
+    };
+
+    createView('https://www.audible.co.uk/webplayer?asin=B0BS735TN2', padding, padding);
+    createView('https://open.spotify.com', padding, viewHeight + padding * 2, true); // Enable touch for Spotify
+    createView('https://www.youtube.com', viewWidth + padding * 2, padding);
+    createView('https://www.google.com/', viewWidth + padding * 2, viewHeight + padding * 2);
 
     win.on('closed', () => {
         win = null;
