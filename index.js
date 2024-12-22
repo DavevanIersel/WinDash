@@ -20,7 +20,7 @@ app.whenReady().then(async () => {
             userAgent = originalUserAgent;
         } else if (url.hostname.includes("spotify.com")) {
             // Spotify will only play music on a different userAgent then the default electron agent
-            userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+            userAgent = "Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0";
         } else {
             userAgent = originalUserAgent;
         }
@@ -69,7 +69,7 @@ app.whenReady().then(async () => {
 
     const view4 = new WebContentsView();
     win.contentView.addChildView(view4);
-    view4.webContents.loadURL('https://www.clockfaceonline.co.uk/clocks/digital/');
+    view4.webContents.loadURL('https://www.google.com/');
     view4.setBounds({ x: viewWidth + padding * 2, y: viewHeight + padding * 2, width: viewWidth, height: viewHeight });
 
     win.on('closed', () => {
