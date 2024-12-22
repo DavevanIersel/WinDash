@@ -14,13 +14,15 @@
       "target": "dmg"
     },
     "win": {
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "afterSign": "afterSign.js"
   },
   "scripts": {
     "start": "electron .",
-  "build": "electron-builder",
+    "build": "electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -33,6 +35,7 @@
   },
   "dependencies": {
     "@ghostery/adblocker-electron": "^2.3.1",
-    "cross-fetch": "^4.1.0"
+    "cross-fetch": "^4.1.0",
+    "js-yaml": "^4.1.0"
   }
 }

@@ -3,12 +3,20 @@ const { ElectronBlocker } = require('@ghostery/adblocker-electron');
 const fetch = require('cross-fetch');
 const path = require('path');
 const fs = require('fs');
+const config = require('./config'); // Import the config file
 
 let win;
 let originalUserAgent;
 
 const cssFilePath = path.join(__dirname, 'styles.css');
 const cssContent = fs.readFileSync(cssFilePath, 'utf-8');
+
+// Grid-related calculations
+const calculateGridCellSize = (windowWidth, windowHeight) => {
+    const gridWidth = windowWidth / config.grid.columns;
+    const gridHeight = windowHeight / config.grid.rows;
+    return { gridWidth, gridHeight };
+};
 
 app.whenReady().then(async () => {
     await components.whenReady();
@@ -50,14 +58,7 @@ app.whenReady().then(async () => {
         }
     });
 
-    const padding = 20;
-    const viewWidth = (win.getBounds().width / 2) - padding - padding;
-    const viewHeight = (win.getBounds().height / 2) - padding - padding;
-
     const injectCSS = (webContents) => {
-        const cssPath = path.join(__dirname, 'styles.css');
-        const cssContent = fs.readFileSync(cssPath, 'utf-8');
-
         webContents.insertCSS(cssContent)
             .then(() => {
                 console.log('CSS injected successfully.');
@@ -93,9 +94,16 @@ app.whenReady().then(async () => {
         return view;
     };
 
-    createView('https://www.google.com/', padding, padding, viewWidth, viewHeight);
-    createView('https://open.spotify.com', padding, viewHeight + padding * 2, viewWidth, viewHeight, true);
-    createView('https://www.buienradar.nl/', viewWidth + padding * 2, padding, viewWidth - 200, win.getBounds().height - padding * 3);
+    const { gridWidth, gridHeight } = calculateGridCellSize(win.getBounds().width, win.getBounds().height);
+
+    config.widgets.forEach(widget => {
+        const x = widget.x * gridWidth;
+        const y = widget.y * gridHeight;
+        const width = widget.width * gridWidth;
+        const height = widget.height * gridHeight;
+
+        createView(widget.url, x, y, width, height, widget.touchEnabled);
+    });
 
     win.on('closed', () => {
         win = null;
