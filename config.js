@@ -33,7 +33,7 @@ const loadAllWidgets = () => {
 export default {
     grid: {
         columns: 18,
-        rows: 10,
+        rows: 10
     },
-    widgets: loadAllWidgets(),
+    widgets: loadAllWidgets()
 };
