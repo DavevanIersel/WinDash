@@ -1,14 +1,14 @@
-const { app, BaseWindow, WebContentsView, session, components, ipcMain } = require('electron');
-const { ElectronBlocker } = require('@ghostery/adblocker-electron');
-const fetch = require('cross-fetch');
-const path = require('path');
-const fs = require('fs');
-const config = require('./config'); // Import the config file
-
+import { app, BaseWindow, WebContentsView, session, components, ipcMain } from 'electron';
+import { ElectronBlocker } from '@ghostery/adblocker-electron';
+import fetch from 'cross-fetch';
+import path from 'path';
+import fs from 'fs';
+import config from './config.js';
 let win;
 let originalUserAgent;
 
-const cssFilePath = path.join(__dirname, 'styles.css');
+const dirname = path.resolve();
+const cssFilePath = path.join(dirname, 'styles.css');
 const cssContent = fs.readFileSync(cssFilePath, 'utf-8');
 
 // Grid-related calculations
@@ -48,7 +48,6 @@ app.whenReady().then(async () => {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            preload: __dirname + '/preload.js',
             webSecurity: false, 
             autoplayPolicy: 'no-user-gesture-required',
             allowRunningInsecureContent: true,
@@ -59,13 +58,7 @@ app.whenReady().then(async () => {
     });
 
     const injectCSS = (webContents) => {
-        webContents.insertCSS(cssContent)
-            .then(() => {
-                console.log('CSS injected successfully.');
-            })
-            .catch((err) => {
-                console.error('Error injecting CSS:', err);
-            });
+        webContents.insertCSS(cssContent);
     };
 
     const enableTouchEmulation = (webContents) => {

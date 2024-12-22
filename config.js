@@ -1,8 +1,10 @@
-const yaml = require('js-yaml');
-const fs = require('fs');
-const path = require('path');
+import yaml from 'js-yaml';
+import fs from 'fs';
+import path from 'path';
 
-const widgetsFolder = path.join(__dirname, 'widgets');
+const dirname = path.resolve();
+
+const widgetsFolder = path.join(dirname, 'widgets');
 
 const loadWidgetConfig = (filename) => {
     const filePath = path.join(widgetsFolder, filename);
@@ -28,7 +30,7 @@ const loadAllWidgets = () => {
     }
 };
 
-module.exports = {
+export default {
     grid: {
         columns: 18,
         rows: 10,
