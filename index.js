@@ -12,8 +12,8 @@ const cssContent = fs.readFileSync(cssFilePath, 'utf-8');
 
 app.whenReady().then(async () => {
     await components.whenReady();
-    // const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
-    // blocker.enableBlockingInSession(session.defaultSession);
+    const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
+    blocker.enableBlockingInSession(session.defaultSession);
     originalUserAgent = session.defaultSession.getUserAgent();
 
     session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
@@ -21,10 +21,8 @@ app.whenReady().then(async () => {
         let userAgent;
 
         if (url.hostname.endsWith("google.com")) {
-            // Google will not allow logins from the chrome 131 userAgent
             userAgent = originalUserAgent;
         } else if (url.hostname.includes("spotify.com")) {
-            // Spotify will only play music on a different userAgent then the default electron agent
             userAgent = "Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0";
         } else {
             userAgent = originalUserAgent;
@@ -33,7 +31,6 @@ app.whenReady().then(async () => {
         details.requestHeaders['User-Agent'] = userAgent;
         callback({ requestHeaders: details.requestHeaders });
     });
-    
 
     win = new BaseWindow({
         width: 1600,
@@ -74,15 +71,15 @@ app.whenReady().then(async () => {
         webContents.debugger.attach('1.3'); 
         webContents.debugger.sendCommand('Emulation.setEmitTouchEventsForMouse', { 
             enabled: true, 
-          });
+        });
     };
 
-    const createView = (url, x, y, touchEnabled = false) => {
+    const createView = (url, x, y, width, height, touchEnabled = false) => {
         const view = new WebContentsView();
         win.contentView.addChildView(view);
         view.webContents.loadURL(url);
         
-        view.setBounds({ x, y, width: viewWidth, height: viewHeight });
+        view.setBounds({ x, y, width, height });
 
         if (touchEnabled) {
             view.webContents.on('did-finish-load', () => {
@@ -96,10 +93,9 @@ app.whenReady().then(async () => {
         return view;
     };
 
-    createView('https://www.audible.co.uk/webplayer?asin=B0BS735TN2', padding, padding);
-    createView('https://open.spotify.com', padding, viewHeight + padding * 2, true); // Enable touch for Spotify
-    createView(path.join(__dirname, 'buienradar.html'), viewWidth + padding * 2, padding);
-    createView('https://www.google.com/', viewWidth + padding * 2, viewHeight + padding * 2);
+    createView('https://www.google.com/', padding, padding, viewWidth, viewHeight);
+    createView('https://open.spotify.com', padding, viewHeight + padding * 2, viewWidth, viewHeight, true);
+    createView('https://www.buienradar.nl/', viewWidth + padding * 2, padding, viewWidth - 200, win.getBounds().height - padding * 3);
 
     win.on('closed', () => {
         win = null;
