@@ -37,7 +37,6 @@
   "dependencies": {
     "@ghostery/adblocker-electron": "^2.3.1",
     "cross-fetch": "^4.1.0",
-    "js-yaml": "^4.1.0",
-    "packery": "^2.1.2"
+    "js-yaml": "^4.1.0"
   }
 }
