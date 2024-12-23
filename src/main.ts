@@ -1,13 +1,21 @@
-import { app, BrowserWindow, ipcMain, session, components, WebContentsView } from 'electron';
-import { ElectronBlocker } from '@ghostery/adblocker-electron';
-import fetch from 'cross-fetch';
-import * as path from 'path';
-import config from './config.js';
-import { calculateGridCellSize } from './grid';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  session,
+  components,
+  WebContentsView,
+} from "electron";
+import { ElectronBlocker } from "@ghostery/adblocker-electron";
+import fetch from "cross-fetch";
+import * as path from "path";
+import config from "./config.js";
+import { calculateGridCellSize } from "./grid";
+import { Widget } from "./models/Widget.js";
 
 let win: BrowserWindow | null = null;
-let originalUserAgent: string;
 const views: any[] = [];
+const widgetWebContentsMap = new Map<number, Widget>();
 
 const dirname = path.resolve();
 const cssContent = `
@@ -21,26 +29,6 @@ app.whenReady().then(async () => {
   await components.whenReady();
   const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
   blocker.enableBlockingInSession(session.defaultSession);
-  originalUserAgent = session.defaultSession.getUserAgent();
-
-  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-    const url = new URL(details.url);
-    let userAgent;
-
-    if (url.hostname.endsWith('google.com')) {
-      userAgent = originalUserAgent;
-    } else if (url.hostname.includes('spotify.com') || url.hostname.includes('audible')) {
-      userAgent =
-        'Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0';
-    }else if (url.hostname.includes('cloudflare.com')) {
-      userAgent =userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0';
-    } else {
-      userAgent = originalUserAgent;
-    }
-
-    details.requestHeaders['User-Agent'] = userAgent;
-    callback({ requestHeaders: details.requestHeaders });
-  });
 
   win = new BrowserWindow({
     width: 1600,
@@ -51,12 +39,12 @@ app.whenReady().then(async () => {
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: false,
-      preload: path.join(dirname, 'preload.js'),
-      autoplayPolicy: 'no-user-gesture-required',
+      preload: path.join(dirname, "preload.js"),
+      autoplayPolicy: "no-user-gesture-required",
       allowRunningInsecureContent: false,
       experimentalFeatures: true,
-      partition: 'persist:session'
-    }
+      partition: "persist:session",
+    },
   });
 
   const injectCSS = (webContents: any) => {
@@ -66,39 +54,47 @@ app.whenReady().then(async () => {
   const enableTouchEmulation = (webContents: any) => {
     if (webContents.debugger && !webContents.debugger.attached) {
       try {
-        webContents.debugger.attach('1.3');
+        webContents.debugger.attach("1.3");
       } catch (error) {
-        console.error('Error attaching debugger:', error);
+        console.error("Error attaching debugger:", error);
       }
     }
-  
+
     // Enable touch emulation
-    webContents.debugger.sendCommand('Emulation.setEmitTouchEventsForMouse', {
-      enabled: true
+    webContents.debugger.sendCommand("Emulation.setEmitTouchEventsForMouse", {
+      enabled: true,
     });
   };
-  
-  const createView = (url: string, x: number, y: number, width: number, height: number, touchEnabled = false) => {
+
+  const createView = (
+    url: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    touchEnabled = false,
+    widget: Widget
+  ) => {
     const view = new WebContentsView();
     win.contentView.addChildView(view);
     view.webContents.loadURL(url);
 
     view.setBounds({ x, y, width, height });
-
+    widgetWebContentsMap.set(view.webContents.id, widget);
     if (touchEnabled) {
-        view.webContents.on('did-finish-load', () => {
-            enableTouchEmulation(view.webContents);
-        });
+      view.webContents.on("did-finish-load", () => {
+        enableTouchEmulation(view.webContents);
+      });
     }
-    view.webContents.on('did-finish-load', () => {
-        injectCSS(view.webContents);
+    view.webContents.on("did-finish-load", () => {
+      injectCSS(view.webContents);
     });
-    win.on('closed', () => {
-        view.webContents.close();
+    win.on("closed", () => {
+      view.webContents.close();
     });
 
     views.push(view);
-};
+  };
 
   const { gridWidth, gridHeight } = calculateGridCellSize(
     win.getBounds().width,
@@ -112,18 +108,38 @@ app.whenReady().then(async () => {
     const width = widget.width * gridWidth;
     const height = widget.height * gridHeight;
 
-    createView(widget.url, x, y, width, height, widget.touchEnabled);
+    createView(widget.url, x, y, width, height, widget.touchEnabled, widget);
   });
 
-  win.on('closed', () => {
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    const url = new URL(details.url);
+    const originalUserAgent = session.defaultSession.getUserAgent();
+    let userAgent = originalUserAgent;
+
+    const widget = widgetWebContentsMap.get(details.webContentsId);
+
+    if (widget && widget.customUserAgent) {
+      for (const [domain, customAgent] of Object.entries(widget.customUserAgent)) {
+        if (url.hostname.includes(domain)) {
+          userAgent = customAgent;
+          break;
+        }
+      }
+    }
+
+    details.requestHeaders["User-Agent"] = userAgent;
+    callback({ requestHeaders: details.requestHeaders });
+  });
+
+  win.on("closed", () => {
     win = null;
   });
 
-  ipcMain.on('close-window', () => {
+  ipcMain.on("close-window", () => {
     win?.close();
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
 });

@@ -1,4 +1,5 @@
 url: 'https://www.buienradar.nl/'
+enabled: true
 x: 8
 y: 0
 width: 5

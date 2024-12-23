@@ -1,15 +1,7 @@
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import * as path from 'path';
-
-interface WidgetConfig {
-  url: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  touchEnabled: boolean;
-}
+import { Widget } from './models/Widget';
 
 interface Grid {
   columns: number;
@@ -18,17 +10,17 @@ interface Grid {
 
 export interface Config {
   grid: Grid;
-  widgets: WidgetConfig[];
+  widgets: Widget[];
 }
 
 const widgetsFolder = path.join(__dirname, 'widgets');
 
 // Load widget configuration from a YAML file
-const loadWidgetConfig = (filename: string): WidgetConfig | null => {
+const loadWidgetConfig = (filename: string): Widget | null => {
   const filePath = path.join(widgetsFolder, filename);
   try {
     const fileContents = fs.readFileSync(filePath, 'utf8');
-    return yaml.load(fileContents) as WidgetConfig;
+    return yaml.load(fileContents) as Widget;
   } catch (e) {
     console.error(`Error reading YAML file ${filename}:`, e);
     return null;
@@ -36,13 +28,13 @@ const loadWidgetConfig = (filename: string): WidgetConfig | null => {
 };
 
 // Load all widgets by reading the folder and filtering YAML files
-const loadAllWidgets = (): WidgetConfig[] => {
+const loadAllWidgets = (): Widget[] => {
   try {
     return fs
       .readdirSync(widgetsFolder)
       .filter((file) => file.endsWith('.widget.yaml'))
       .map(loadWidgetConfig)
-      .filter((config) => config !== null) as WidgetConfig[];
+      .filter((config) => config !== null && config.enabled) as Widget[];
   } catch (e) {
     console.error('Error reading widgets folder:', e);
     return [];
