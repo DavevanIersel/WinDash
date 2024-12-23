@@ -75,24 +75,25 @@ app.whenReady().then(async () => {
   };
 
   const createView = (
-    url: string,
     x: number,
     y: number,
     width: number,
     height: number,
-    touchEnabled = false,
     widget: Widget
   ) => {
     const view = new WebContentsView();
     win.contentView.addChildView(view);
-    view.webContents.loadURL(url);
+    view.webContents.loadURL(widget.url);
 
     view.setBounds({ x, y, width, height });
     widgetWebContentsMap.set(view.webContents.id, widget);
-    if (touchEnabled) {
+    if (widget.touchEnabled) {
       view.webContents.on("did-finish-load", () => {
         enableTouchEmulation(view.webContents);
       });
+    }
+    if (widget.devTools) {
+      view.webContents.toggleDevTools();
     }
     view.webContents.on("did-finish-load", () => {
       injectCSS(view.webContents);
@@ -120,7 +121,7 @@ app.whenReady().then(async () => {
     const width = widget.width * gridWidth; // Width remains based on grid
     const height = widget.height * gridHeight; // Height remains based on grid
   
-    createView(widget.url, x, y, width, height, widget.touchEnabled, widget);
+    createView(x, y, width, height, widget);
   });
   // setInterval(() => {
   //   views.forEach((view) => {
