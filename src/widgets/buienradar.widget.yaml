@@ -2,7 +2,7 @@ url: 'https://www.buienradar.nl/'
 enabled: true
 x: 13.4
 y: 0
-width: 5
+width: 4.5
 height: 10
 touchEnabled: false
 customScript: |

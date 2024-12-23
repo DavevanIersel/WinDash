@@ -5,6 +5,7 @@ import {
   session,
   components,
   WebContentsView,
+  screen,
 } from "electron";
 import { ElectronBlocker } from "@ghostery/adblocker-electron";
 import fetch from "cross-fetch";
@@ -16,6 +17,7 @@ import { Widget } from "./models/Widget.js";
 let win: BrowserWindow | null = null;
 const views: any[] = [];
 const widgetWebContentsMap = new Map<number, Widget>();
+const PADDING = 50;
 
 const dirname = path.resolve();
 const cssContent = `
@@ -29,10 +31,17 @@ app.whenReady().then(async () => {
   await components.whenReady();
   const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
   blocker.enableBlockingInSession(session.defaultSession);
+  const displays = screen.getAllDisplays();
+  const secondDisplay = displays[2];
+  const { x, y } = secondDisplay.bounds;
 
+  console.log(x, y)
   win = new BrowserWindow({
-    width: 1600,
-    height: 900,
+    width: 1920,
+    height: 1080,
+    x,
+    y,
+    icon: "./src/assets/WinDash-logo.png",
     transparent: true,
     frame: false,
     webPreferences: {
@@ -46,7 +55,7 @@ app.whenReady().then(async () => {
       partition: "persist:session",
     },
   });
-
+  win.maximize();
   const injectCSS = (webContents: any) => {
     webContents.insertCSS(cssContent);
   };
@@ -60,7 +69,6 @@ app.whenReady().then(async () => {
       }
     }
 
-    // Enable touch emulation
     webContents.debugger.sendCommand("Emulation.setEmitTouchEventsForMouse", {
       enabled: true,
     });
@@ -101,20 +109,30 @@ app.whenReady().then(async () => {
   };
 
   const { gridWidth, gridHeight } = calculateGridCellSize(
-    win.getBounds().width,
-    win.getBounds().height,
+    win.getBounds().width - 2 * PADDING, // Subtract padding from total width
+    win.getBounds().height - 2 * PADDING, // Subtract padding from total height
     config
   );
-
+  
   config.widgets.forEach((widget) => {
-    const x = widget.x * gridWidth;
-    const y = widget.y * gridHeight;
-    const width = widget.width * gridWidth;
-    const height = widget.height * gridHeight;
-
+    const x = widget.x * gridWidth + PADDING; // Add padding to x position
+    const y = widget.y * gridHeight + PADDING; // Add padding to y position
+    const width = widget.width * gridWidth; // Width remains based on grid
+    const height = widget.height * gridHeight; // Height remains based on grid
+  
     createView(widget.url, x, y, width, height, widget.touchEnabled, widget);
   });
-
+  // setInterval(() => {
+  //   views.forEach((view) => {
+  //     const bounds = view.getBounds(); // Get the current bounds
+  //     view.setBounds({
+  //       x: bounds.x + 10, // Increment x by 10 pixels
+  //       y: bounds.y,
+  //       width: bounds.width,
+  //       height: bounds.height,
+  //     });
+  //   });
+  // }, 1000);
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
     const url = new URL(details.url);
     const originalUserAgent = session.defaultSession.getUserAgent();
