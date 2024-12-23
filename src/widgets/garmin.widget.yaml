@@ -5,6 +5,7 @@ y: 0
 width: 5
 height: 10
 touchEnabled: true
-devTools: true
-customUserAgent:
-  'cloudflare.com': 'Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0'
+devTools: false
+# Get through cloudflare by setting a different user agent on the webpage itself, not cloudflare
+customUserAgent: 
+  'garmin': 'Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0' 

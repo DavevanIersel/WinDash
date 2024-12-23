@@ -35,7 +35,6 @@ app.whenReady().then(async () => {
   const secondDisplay = displays[2];
   const { x, y } = secondDisplay.bounds;
 
-  console.log(x, y)
   win = new BrowserWindow({
     width: 1920,
     height: 1080,
@@ -45,9 +44,9 @@ app.whenReady().then(async () => {
     transparent: true,
     frame: false,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      webSecurity: false,
+      nodeIntegration: true,
+      contextIsolation: false,
+      webSecurity: true,
       preload: path.join(dirname, "preload.js"),
       autoplayPolicy: "no-user-gesture-required",
       allowRunningInsecureContent: false,
