@@ -93,6 +93,10 @@ app.whenReady().then(async () => {
       view.webContents.close();
     });
 
+    if (widget.customScript) {
+      view.webContents.executeJavaScript(widget.customScript);
+    }
+
     views.push(view);
   };
 
@@ -119,7 +123,9 @@ app.whenReady().then(async () => {
     const widget = widgetWebContentsMap.get(details.webContentsId);
 
     if (widget && widget.customUserAgent) {
-      for (const [domain, customAgent] of Object.entries(widget.customUserAgent)) {
+      for (const [domain, customAgent] of Object.entries(
+        widget.customUserAgent
+      )) {
         if (url.hostname.includes(domain)) {
           userAgent = customAgent;
           break;

@@ -1,0 +1,7 @@
+url: 'https://connect.garmin.com/modern/home'
+enabled: true
+x: 8
+y: 0
+width: 5
+height: 10
+touchEnabled: true
