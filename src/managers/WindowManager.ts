@@ -37,7 +37,7 @@ export class WindowManager {
     ipcMain.on("close-window", () => {
       this.mainWindow?.close();
     });
-    
+
     ipcMain.on("toggle-devtools", (event, isOpen: boolean) => {
       if (!this.mainWindow) {
         return;

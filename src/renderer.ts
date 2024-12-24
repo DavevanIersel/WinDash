@@ -3,10 +3,10 @@
 // Use preload.js to selectively enable features
 // needed in the renderer process.
 
-import { gridSize } from "./utils/gridUtils";
-
 const { ipcRenderer } = require("electron");
 const Konva = require("konva");
+const { gridSize } = require("./utils/gridUtils");
+const moveHandleSize = 20;
 
 const devtoolsButton = document.getElementById("toggle-devtools");
 let isDevToolsOpen = false;
@@ -64,34 +64,41 @@ document.addEventListener("DOMContentLoaded", () => {
       y: snapToGrid(position.y),
       width: position.width,
       height: position.height,
-      fill: "#ff0000",
-      stroke: "#000",
-      strokeWidth: 2,
-      draggable: true,
     });
 
     const resizeHandle = new Konva.Circle({
       x: snapToGrid(position.x) + position.width,
       y: snapToGrid(position.y) + position.height,
-      radius: 6,
-      fill: "red",
+      radius: 8,
+      fill: "transparent",
+      stroke: "gray",
+      strokeWidth: 2,
       draggable: true,
+      shadowColor: "black",
+      shadowBlur: 10,
+      shadowOffset: { x: 2, y: 2 },
+      shadowOpacity: 0.5,
     });
 
     const moveHandle = new Konva.Rect({
       x: snapToGrid(position.x) + position.width,
-      y: snapToGrid(position.y) - 20,
-      width: 20,
-      height: 20,
-      radius: 6,
-      fill: "blue",
+      y: snapToGrid(position.y) - moveHandleSize,
+      width: moveHandleSize,
+      height: moveHandleSize,
+      fill: "transparent",
+      stroke: "gray",
+      strokeWidth: 2,
       draggable: true,
+      shadowColor: "black",
+      shadowBlur: 10,
+      shadowOffset: { x: 2, y: 2 },
+      shadowOpacity: 0.5,
     });
 
     // Drag and drop
     moveHandle.on("dragmove", () => {
       const newX = snapToGrid(moveHandle.x() - widgetRect.width());
-      const newY = snapToGrid(moveHandle.y() + 20);
+      const newY = snapToGrid(moveHandle.y() + moveHandleSize);
       widgetRect.position({ x: newX, y: newY });
       resizeHandle.position({
         x: newX + widgetRect.width(),
@@ -99,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       moveHandle.position({
         x: newX + widgetRect.width(),
-        y: newY - 20,
+        y: newY - moveHandleSize,
       });
 
       updateWidgetPosition(id, { x: newX, y: newY });
@@ -118,9 +125,15 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       widgetRect.width(newWidth);
       widgetRect.height(newHeight);
+
       resizeHandle.position({
         x: widgetRect.x() + newWidth,
         y: widgetRect.y() + newHeight,
+      });
+
+      moveHandle.position({
+        x: widgetRect.x() + newWidth,
+        y: widgetRect.y() - moveHandleSize,
       });
 
       updateWidgetPosition(id, { width: newWidth, height: newHeight });
