@@ -6,6 +6,8 @@ import {
   components,
   WebContentsView,
   screen,
+  Tray,
+  Menu
 } from "electron";
 import { ElectronBlocker } from "@ghostery/adblocker-electron";
 import fetch from "cross-fetch";
@@ -18,6 +20,7 @@ let win: BrowserWindow | null = null;
 const views: any[] = [];
 const widgetWebContentsMap = new Map<number, Widget>();
 const PADDING = 50;
+let tray: Tray | null = null;
 
 const dirname = path.resolve();
 const cssContent = `
@@ -42,6 +45,7 @@ app.whenReady().then(async () => {
     y,
     icon: "./src/assets/WinDash-logo.png",
     transparent: true,
+    skipTaskbar: true,
     frame: false,
     webPreferences: {
       nodeIntegration: true,
@@ -55,6 +59,23 @@ app.whenReady().then(async () => {
     },
   });
   win.maximize();
+  tray = new Tray(path.join(dirname, "src/assets/WinDash-logo.png"));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Show App",
+      click: () => {
+        win?.show();
+      },
+    },
+    {
+      label: "Quit",
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+  tray.setContextMenu(contextMenu);
+  tray.setToolTip("My Electron App");
   const injectCSS = (webContents: any) => {
     webContents.insertCSS(cssContent);
   };
