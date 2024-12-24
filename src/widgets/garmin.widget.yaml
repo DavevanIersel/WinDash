@@ -1,9 +1,9 @@
 url: 'https://connect.garmin.com/modern/home'
 enabled: true
-x: 8
-y: 0
-width: 5
-height: 10
+x: 18
+y: 2
+width: 10
+height: 17
 touchEnabled: true
 devTools: false
 # Get through cloudflare by setting a different user agent on the webpage itself, not cloudflare

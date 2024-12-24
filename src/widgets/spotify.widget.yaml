@@ -1,9 +1,9 @@
 url: 'https://open.spotify.com'
 enabled: true
-x: 0
-y: 5.2
-width: 7.6
-height: 4.8
+x: 2
+y: 11
+width: 15
+height: 8
 touchEnabled: true
 customUserAgent:
   'open.spotify.com': 'Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0'

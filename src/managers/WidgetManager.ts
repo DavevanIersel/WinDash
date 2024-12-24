@@ -1,6 +1,5 @@
 import { WebContentsView, ipcMain, session } from "electron";
 import { Widget } from "../models/Widget";
-import { calculateGridCellSize } from "../utils/gridUtils";
 import config from "../config";
 import { WindowManager } from "./WindowManager";
 import { join } from "path";
@@ -22,14 +21,9 @@ export class WidgetManager {
   }
 
   public initializeWidgets() {
-    const { gridWidth, gridHeight } = calculateGridCellSize(
-      this.windowManager.getMainWindow().getBounds().width - 2 * PADDING,
-      this.windowManager.getMainWindow().getBounds().height - 2 * PADDING,
-      config
-    );
 
     config.widgets.forEach((widget: Widget) => {
-      this.createWidget(widget, gridWidth, gridHeight);
+      this.createWidget(widget);
     });
 
     overwriteUserAgents();
@@ -37,32 +31,23 @@ export class WidgetManager {
     ipcMain.on(
       "toggle-edit",
       (event, editing: boolean, widgetPositions: Map<number, Position>) => {
-        if (editing) {
-          // views.forEach((view) => {
-          //   this.windowManager
-          //     .getMainWindow()
-          //     .contentView.removeChildView(view);
-          // });
-        } else {
+        if (!editing) {
           this.updateWidgetPositions(widgetPositions);
-          // views.forEach((view) => {
-          //   this.windowManager.getMainWindow().contentView.addChildView(view);
-          // });
         }
       }
     );
   }
 
-  private createWidget(widget: Widget, gridWidth: number, gridHeight: number) {
+  private createWidget(widget: Widget) {
     const view = new WebContentsView();
     view.webContents.loadURL(widget.url);
 
     widgetWebContentsMap.set(view.webContents.id, widget);
     view.setBounds({
-      x: widget.x * gridWidth + PADDING,
-      y: widget.y * gridHeight + PADDING,
-      width: widget.width * gridWidth,
-      height: widget.height * gridHeight,
+      x: widget.x,
+      y: widget.y,
+      width: widget.width,
+      height: widget.height,
     });
 
     if (widget.devTools) {
@@ -90,10 +75,10 @@ export class WidgetManager {
     // Add a container below the WebContentsView for grid management (Drag and Drop)
     this.createDraggableWidgetFromMain(
       view.webContents.id,
-      widget.x * gridWidth + PADDING,
-      widget.y * gridHeight + PADDING,
-      widget.width * gridWidth,
-      widget.height * gridHeight
+      widget.x,
+      widget.y,
+      widget.width,
+      widget.height
     );
     views.push(view);
   }

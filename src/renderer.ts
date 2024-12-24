@@ -3,6 +3,8 @@
 // Use preload.js to selectively enable features
 // needed in the renderer process.
 
+import { gridSize } from "./utils/gridUtils";
+
 const { ipcRenderer } = require("electron");
 const Konva = require("konva");
 
@@ -35,7 +37,6 @@ if (editButton) {
 
 //Grid systems
 document.addEventListener("DOMContentLoaded", () => {
-  const gridSize = 50;
   const stage = new Konva.Stage({
     container: "grid-stack",
     width: 1920, // offsetwidth still to fix
@@ -78,32 +79,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const moveHandle = new Konva.Rect({
-        x: snapToGrid(position.x) + position.width,
-        y: snapToGrid(position.y) - 20,
-        width: 20,
-        height: 20,
-        radius: 6,
-        fill: "blue",
-        draggable: true,
-      });
+      x: snapToGrid(position.x) + position.width,
+      y: snapToGrid(position.y) - 20,
+      width: 20,
+      height: 20,
+      radius: 6,
+      fill: "blue",
+      draggable: true,
+    });
 
     // Drag and drop
     moveHandle.on("dragmove", () => {
-        const newX = snapToGrid(moveHandle.x() - widgetRect.width());
-        const newY = snapToGrid(moveHandle.y() + 20);
-        widgetRect.position({ x: newX, y: newY });
-        resizeHandle.position({
-          x: newX + widgetRect.width(),
-          y: newY + widgetRect.height(),
-        });
-        moveHandle.position({
-          x: newX + widgetRect.width(),
-          y: newY - 20,
-        });
-  
-        updateWidgetPosition(id, { x: newX, y: newY });
-        layer.draw();
+      const newX = snapToGrid(moveHandle.x() - widgetRect.width());
+      const newY = snapToGrid(moveHandle.y() + 20);
+      widgetRect.position({ x: newX, y: newY });
+      resizeHandle.position({
+        x: newX + widgetRect.width(),
+        y: newY + widgetRect.height(),
       });
+      moveHandle.position({
+        x: newX + widgetRect.width(),
+        y: newY - 20,
+      });
+
+      updateWidgetPosition(id, { x: newX, y: newY });
+      layer.draw();
+    });
 
     // Resize
     resizeHandle.on("dragmove", () => {

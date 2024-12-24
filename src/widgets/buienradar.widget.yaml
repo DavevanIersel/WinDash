@@ -1,9 +1,9 @@
 url: 'https://www.buienradar.nl/'
 enabled: true
-x: 13.4
-y: 0
-width: 4.5
-height: 10
+x: 29
+y: 2
+width: 8
+height: 17
 touchEnabled: false
 customScript: |
   const pauseButton = document.querySelector('.btn-pause');
