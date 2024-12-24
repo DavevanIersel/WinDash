@@ -6,9 +6,11 @@
 // needed in the renderer process.
 const { ipcRenderer } = require("electron");
 const devtoolsButton = document.getElementById("toggle-devtools");
+let isDevToolsOpen = false;
 
 if (devtoolsButton) {
   devtoolsButton.addEventListener("click", () => {
-    ipcRenderer.send("toggle-devtools");
+    isDevToolsOpen = !isDevToolsOpen; 
+    ipcRenderer.send("toggle-devtools", isDevToolsOpen);
   });
 }

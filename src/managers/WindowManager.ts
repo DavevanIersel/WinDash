@@ -37,16 +37,15 @@ export class WindowManager {
     ipcMain.on("close-window", () => {
       this.mainWindow?.close();
     });
-
-    ipcMain.on("toggle-devtools", () => {
+    
+    ipcMain.on("toggle-devtools", (event, isOpen: boolean) => {
       if (!this.mainWindow) {
         return;
       }
-      const isDevToolsOpened = this.mainWindow.webContents.isDevToolsOpened();
-      if (isDevToolsOpened) {
-        this.mainWindow.webContents.closeDevTools();
-      } else {
+      if (isOpen) {
         this.mainWindow.webContents.openDevTools({ mode: "detach" });
+      } else {
+        this.mainWindow.webContents.closeDevTools();
       }
     });
   }

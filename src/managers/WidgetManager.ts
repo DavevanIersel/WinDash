@@ -1,4 +1,4 @@
-import { WebContentsView, session } from "electron";
+import { WebContentsView, ipcMain, session } from "electron";
 import { Widget } from "../models/Widget";
 import { calculateGridCellSize } from "../utils/gridUtils";
 import config from "../config";
@@ -76,6 +76,14 @@ export class WidgetManager {
       widget.width * gridWidth,
       widget.height * gridHeight
     );
+    
+    ipcMain.on("toggle-devtools", (event, isOpen: boolean) => {
+      if (isOpen) {
+        this.windowManager.getMainWindow().contentView.removeChildView(view);
+      } else {
+        this.windowManager.getMainWindow().contentView.addChildView(view);
+      }
+    });
   }
 
   private createDraggableContainer(
