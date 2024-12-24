@@ -1,12 +1,12 @@
 {
-  "name": "electron-quick-start-typescript",
+  "name": "win-dash",
   "version": "1.0.0",
-  "description": "A minimal Electron application written with Typescript",
+  "description": "A Windows desktop dashboard management tool",
   "build": {
     "appId": "com.example.app",
     "productName": "WinDash",
     "win": {
-      "icon": "build/icon.ico",
+      "icon": "assets/WinDash-logo.png",
       "target": [
         "nsis"
       ]

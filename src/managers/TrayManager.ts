@@ -1,13 +1,11 @@
 import { Tray, Menu, BrowserWindow } from "electron";
 import * as path from "path";
 
-const dirname = path.resolve();
-
 export class TrayManager {
   private tray: Tray | null = null;
 
   public initialize(mainWindow: BrowserWindow | null) {
-    this.tray = new Tray(path.join(dirname, "src/assets/WinDash-logo.png"));
+    this.tray = new Tray(path.join(__dirname, "../assets/WinDash-logo.png"));
     const contextMenu = Menu.buildFromTemplate([
       {
         label: "Show App",
