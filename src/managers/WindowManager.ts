@@ -37,7 +37,7 @@ export class WindowManager {
     ipcMain.on("close-window", () => {
       this.mainWindow?.close();
     });
-    
+    this.mainWindow.webContents.openDevTools({ mode: "detach" });
     ipcMain.on("toggle-devtools", (event, isOpen: boolean) => {
       if (!this.mainWindow) {
         return;

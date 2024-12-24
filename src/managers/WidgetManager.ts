@@ -5,6 +5,7 @@ import config from "../config";
 import { WindowManager } from "./WindowManager";
 import { join } from "path";
 import { readFileSync } from "fs";
+import { Position } from "../models/Position";
 
 const widgetWebContentsMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
@@ -32,12 +33,39 @@ export class WidgetManager {
     });
 
     overwriteUserAgents();
+
+    ipcMain.on(
+      "toggle-devtools",
+      (event, isOpen: boolean, widgetPositions: Map<number, Position>) => {
+        if (isOpen) {
+          views.forEach((view) => {
+            this.windowManager
+              .getMainWindow()
+              .contentView.removeChildView(view);
+          });
+        } else {
+          console.log("before");
+          views.forEach((view) => {
+            console.log(view.webContents.id);
+            console.log(view.getBounds());
+          });
+          this.updateWidgetPositions(widgetPositions);
+          console.log("after");
+          views.forEach((view) => {
+            console.log(view.webContents.id);
+            console.log(view.getBounds());
+          });
+          views.forEach((view) => {
+            this.windowManager.getMainWindow().contentView.addChildView(view);
+          });
+        }
+      }
+    );
   }
 
   private createWidget(widget: Widget, gridWidth: number, gridHeight: number) {
     const view = new WebContentsView();
     view.webContents.loadURL(widget.url);
-    views.push(view);
 
     widgetWebContentsMap.set(view.webContents.id, widget);
     view.setBounds({
@@ -70,43 +98,53 @@ export class WidgetManager {
     });
 
     // Add a container below the WebContentsView for grid management (Drag and Drop)
-    this.createDraggableContainer(
+    this.createDraggableWidgetFromMain(
+      view.webContents.id,
       widget.x * gridWidth + PADDING,
       widget.y * gridHeight + PADDING,
       widget.width * gridWidth,
       widget.height * gridHeight
     );
-    
-    ipcMain.on("toggle-devtools", (event, isOpen: boolean) => {
-      if (isOpen) {
-        this.windowManager.getMainWindow().contentView.removeChildView(view);
-      } else {
-        this.windowManager.getMainWindow().contentView.addChildView(view);
-      }
-    });
+    views.push(view);
   }
 
-  private createDraggableContainer(
+  public createDraggableWidgetFromMain(
+    id: number,
     x: number,
     y: number,
     width: number,
     height: number
   ) {
-    const containerId = `container-${Math.floor(x)}-${Math.floor(y)}`;
+    this.windowManager.getMainWindow().webContents.on("did-finish-load", () => {
+      this.windowManager
+        .getMainWindow()
+        .webContents.send("create-draggable-widget", id, x, y, width, height);
+    });
+  }
 
-    this.windowManager.getMainWindow().webContents.executeJavaScript(`
-      var container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '${x}px';
-      container.style.top = '${y}px';
-      container.style.width = '${width}px';
-      container.style.height = '${height}px';
-      container.style.outline = '5px solid black' ;
-      container.style.backgroundColor = 'black';
-      container.classList.add('draggable-container');
-      container.id = '${containerId}';
-      document.body.appendChild(container);
-    `);
+  private updateWidgetPositions(widgetPositions: Map<number, Position>) {
+    console.log(widgetPositions)
+    widgetPositions.forEach((position, id) => {
+      const widget = widgetWebContentsMap.get(id);
+      if (widget) {
+        widgetWebContentsMap.set(id, {
+          ...widget,
+          x: position.x,
+          y: position.y,
+          width: position.width,
+          height: position.height,
+        });
+
+        views
+          .find((view) => view.webContents.id === id)
+          ?.setBounds({
+            x: position.x,
+            y: position.y,
+            width: position.width,
+            height: position.height,
+          });
+      }
+    });
   }
 }
 
