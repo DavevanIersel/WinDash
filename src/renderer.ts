@@ -77,19 +77,33 @@ document.addEventListener("DOMContentLoaded", () => {
       draggable: true,
     });
 
-    // Drag and drop
-    widgetRect.on("dragmove", () => {
-      const newX = snapToGrid(widgetRect.x());
-      const newY = snapToGrid(widgetRect.y());
-      widgetRect.position({ x: newX, y: newY });
-      resizeHandle.position({
-        x: newX + widgetRect.width(),
-        y: newY + widgetRect.height(),
+    const moveHandle = new Konva.Rect({
+        x: snapToGrid(position.x) + position.width,
+        y: snapToGrid(position.y) - 20,
+        width: 20,
+        height: 20,
+        radius: 6,
+        fill: "blue",
+        draggable: true,
       });
 
-      updateWidgetPosition(id, { x: newX, y: newY });
-      layer.draw();
-    });
+    // Drag and drop
+    moveHandle.on("dragmove", () => {
+        const newX = snapToGrid(moveHandle.x() - widgetRect.width());
+        const newY = snapToGrid(moveHandle.y() + 20);
+        widgetRect.position({ x: newX, y: newY });
+        resizeHandle.position({
+          x: newX + widgetRect.width(),
+          y: newY + widgetRect.height(),
+        });
+        moveHandle.position({
+          x: newX + widgetRect.width(),
+          y: newY - 20,
+        });
+  
+        updateWidgetPosition(id, { x: newX, y: newY });
+        layer.draw();
+      });
 
     // Resize
     resizeHandle.on("dragmove", () => {
@@ -114,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     layer.add(widgetRect);
     layer.add(resizeHandle);
+    layer.add(moveHandle);
     layer.draw();
   }
 
