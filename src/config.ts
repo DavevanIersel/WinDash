@@ -15,7 +15,6 @@ export interface Config {
 
 const widgetsFolder = path.join(__dirname, 'widgets');
 
-// Load widget configuration from a YAML file
 const loadWidgetConfig = (filename: string): Widget | null => {
   const filePath = path.join(widgetsFolder, filename);
   try {
@@ -27,7 +26,6 @@ const loadWidgetConfig = (filename: string): Widget | null => {
   }
 };
 
-// Load all widgets by reading the folder and filtering YAML files
 const loadAllWidgets = (): Widget[] => {
   try {
     return fs
@@ -41,7 +39,6 @@ const loadAllWidgets = (): Widget[] => {
   }
 };
 
-// Define the configuration object with the correct type
 const config: Config = {
   grid: {
     columns: 18,

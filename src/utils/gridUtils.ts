@@ -1,4 +1,4 @@
-import { Config } from "./config";
+import { Config } from "../config";
 
 export const calculateGridCellSize = (windowWidth: number, windowHeight: number, config: Config) => {
     const gridWidth = windowWidth / config.grid.columns;
