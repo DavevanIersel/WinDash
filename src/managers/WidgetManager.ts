@@ -38,16 +38,16 @@ export class WidgetManager {
       "toggle-edit",
       (event, editing: boolean, widgetPositions: Map<number, Position>) => {
         if (editing) {
-          views.forEach((view) => {
-            this.windowManager
-              .getMainWindow()
-              .contentView.removeChildView(view);
-          });
+          // views.forEach((view) => {
+          //   this.windowManager
+          //     .getMainWindow()
+          //     .contentView.removeChildView(view);
+          // });
         } else {
           this.updateWidgetPositions(widgetPositions);
-          views.forEach((view) => {
-            this.windowManager.getMainWindow().contentView.addChildView(view);
-          });
+          // views.forEach((view) => {
+          //   this.windowManager.getMainWindow().contentView.addChildView(view);
+          // });
         }
       }
     );

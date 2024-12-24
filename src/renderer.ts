@@ -1,10 +1,8 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
 // No Node.js APIs are available in this process unless
 // nodeIntegration is set to true in webPreferences.
 // Use preload.js to selectively enable features
-
 // needed in the renderer process.
+
 const { ipcRenderer } = require("electron");
 const Konva = require("konva");
 
@@ -47,9 +45,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const layer = new Konva.Layer();
   stage.add(layer);
 
-  function snapToGrid(value: number) {
-    return Math.round(value / gridSize) * gridSize;
-  }
+  ipcRenderer.on(
+    "create-draggable-widget",
+    (event, id, x, y, width, height) => {
+      createDraggableWidget(id, { x, y, width, height });
+    }
+  );
 
   function createDraggableWidget(
     id: number,
@@ -62,63 +63,45 @@ document.addEventListener("DOMContentLoaded", () => {
       draggable: true,
     });
 
-    // Create a rectangle representing the widget
-    const rect = new Konva.Rect({
+    const widgetRect = new Konva.Rect({
       width: position.width,
       height: position.height,
       fill: "#ff0000",
       stroke: "#000",
       strokeWidth: 2,
     });
-    group.add(rect);
+    group.add(widgetRect);
 
-    // Add snapping behavior on drag
-    group.on("dragend", () => {
-      const newX = snapToGrid(group.x());
-      const newY = snapToGrid(group.y());
-      group.position({ x: newX, y: newY });
-
-      // Update the position in the widgetPositions map
-
-      const oldPos = widgetPositions.get(id);
-      widgetPositions.set(id, {
-        x: newX,
-        y: newY,
-        width: oldPos.width,
-        height: oldPos.height,
-      });
-
-      layer.draw();
-    });
-
-    // Create a resize handle (small draggable circle)
-    const handle = new Konva.Circle({
+    const resizeHandle = new Konva.Circle({
       x: position.width,
       y: position.height,
       radius: 6,
       fill: "red",
       draggable: true,
     });
-    group.add(handle);
+    group.add(resizeHandle);
 
-    // Handle resizing logic
-    handle.on("dragmove", () => {
-      const newWidth = Math.max(snapToGrid(handle.x()), gridSize);
-      const newHeight = Math.max(snapToGrid(handle.y()), gridSize);
-      rect.width(newWidth);
-      rect.height(newHeight);
-      handle.x(newWidth);
-      handle.y(newHeight);
+    // Drag and drop
+    group.on("dragmove", () => {
+        const newX = snapToGrid(group.x());
+        const newY = snapToGrid(group.y());
+        group.position({ x: newX, y: newY });
+  
+        updateWidgetPosition(id, { x: newX, y: newY });
+  
+        layer.draw();
+    });
 
-      // Update the size in the widgetPositions map
-      const oldPos = widgetPositions.get(id);
-      widgetPositions.set(id, {
-        x: oldPos.x,
-        y: oldPos.y,
-        width: newWidth,
-        height: newHeight,
-      });
+    // Resize
+    resizeHandle.on("dragmove", () => {
+      const newWidth = Math.max(snapToGrid(resizeHandle.x()), gridSize);
+      const newHeight = Math.max(snapToGrid(resizeHandle.y()), gridSize);
+      widgetRect.width(newWidth);
+      widgetRect.height(newHeight);
+      resizeHandle.x(newWidth);
+      resizeHandle.y(newHeight);
 
+      updateWidgetPosition(id, { width: newWidth, height: newHeight });
       layer.draw();
     });
 
@@ -126,12 +109,24 @@ document.addEventListener("DOMContentLoaded", () => {
     layer.draw();
   }
 
-  ipcRenderer.on(
-    "create-draggable-widget",
-    (event, id, x, y, width, height) => {
-      createDraggableWidget(id, { x, y, width, height });
-    }
-  );
+  function snapToGrid(value: number) {
+    return Math.round(value / gridSize) * gridSize;
+  }
+
+  function updateWidgetPosition(
+    id: number,
+    newPos: { x?: number; y?: number; width?: number; height?: number }
+  ): void {
+    const oldPos = widgetPositions.get(id);
+    widgetPositions.set(id, {
+      x: newPos.x ?? oldPos.x,
+      y: newPos.y ?? oldPos.y,
+      width: newPos.width ?? oldPos.width,
+      height: newPos.height ?? oldPos.height,
+    });
+  
+    ipcRenderer.send("toggle-edit", false, widgetPositions);
+  }
 
   // Adjust stage size on window resize
   // window.addEventListener('resize', () => {
