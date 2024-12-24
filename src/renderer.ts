@@ -11,17 +11,27 @@ const Konva = require("konva");
 const devtoolsButton = document.getElementById("toggle-devtools");
 let isDevToolsOpen = false;
 
+const editButton = document.getElementById("edit");
+let isEditing = false;
+
 /** @type {import('./models/Position').Position} */
 let widgetPositions = new Map();
 
 if (devtoolsButton) {
   devtoolsButton.addEventListener("click", () => {
     isDevToolsOpen = !isDevToolsOpen;
+    ipcRenderer.send("toggle-devtools", isDevToolsOpen);
+  });
+}
+
+if (editButton) {
+  editButton.addEventListener("click", () => {
+    isEditing = !isEditing;
     const gridStack = document.getElementById("grid-stack");
     if (gridStack) {
-      gridStack.style.display = isDevToolsOpen ? "block" : "none";
+      gridStack.style.display = isEditing ? "block" : "none";
     }
-    ipcRenderer.send("toggle-devtools", isDevToolsOpen, widgetPositions);
+    ipcRenderer.send("toggle-edit", isEditing, widgetPositions);
   });
 }
 
@@ -64,23 +74,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Add snapping behavior on drag
     group.on("dragend", () => {
-        const newX = snapToGrid(group.x());
-        const newY = snapToGrid(group.y());
-        group.position({ x: newX, y: newY });
-  
-        // Update the position in the widgetPositions map
+      const newX = snapToGrid(group.x());
+      const newY = snapToGrid(group.y());
+      group.position({ x: newX, y: newY });
 
-        const oldPos = widgetPositions.get(id);
-        widgetPositions.set(id, {
-          x: newX,
-          y: newY,
-          width: oldPos.width,
-          height: oldPos.height,
-        });
-        console.log(widgetPositions);
-  
-        layer.draw();
+      // Update the position in the widgetPositions map
+
+      const oldPos = widgetPositions.get(id);
+      widgetPositions.set(id, {
+        x: newX,
+        y: newY,
+        width: oldPos.width,
+        height: oldPos.height,
       });
+
+      layer.draw();
+    });
 
     // Create a resize handle (small draggable circle)
     const handle = new Konva.Circle({
@@ -94,26 +103,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Handle resizing logic
     handle.on("dragmove", () => {
-        const newWidth = Math.max(snapToGrid(handle.x()), gridSize);
-        const newHeight = Math.max(snapToGrid(handle.y()), gridSize);
-        rect.width(newWidth);
-        rect.height(newHeight);
-        handle.x(newWidth);
-        handle.y(newHeight);
-  
-        // Update the size in the widgetPositions map
-        const oldPos = widgetPositions.get(id);
-        widgetPositions.set(id, {
-          x: oldPos.x,
-          y: oldPos.y,
-          width: newWidth,
-          height: newHeight,
-        });
-  
-        console.log(widgetPositions);
-  
-        layer.draw();
+      const newWidth = Math.max(snapToGrid(handle.x()), gridSize);
+      const newHeight = Math.max(snapToGrid(handle.y()), gridSize);
+      rect.width(newWidth);
+      rect.height(newHeight);
+      handle.x(newWidth);
+      handle.y(newHeight);
+
+      // Update the size in the widgetPositions map
+      const oldPos = widgetPositions.get(id);
+      widgetPositions.set(id, {
+        x: oldPos.x,
+        y: oldPos.y,
+        width: newWidth,
+        height: newHeight,
       });
+
+      layer.draw();
+    });
 
     layer.add(group);
     layer.draw();

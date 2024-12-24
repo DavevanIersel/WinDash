@@ -35,26 +35,16 @@ export class WidgetManager {
     overwriteUserAgents();
 
     ipcMain.on(
-      "toggle-devtools",
-      (event, isOpen: boolean, widgetPositions: Map<number, Position>) => {
-        if (isOpen) {
+      "toggle-edit",
+      (event, editing: boolean, widgetPositions: Map<number, Position>) => {
+        if (editing) {
           views.forEach((view) => {
             this.windowManager
               .getMainWindow()
               .contentView.removeChildView(view);
           });
         } else {
-          console.log("before");
-          views.forEach((view) => {
-            console.log(view.webContents.id);
-            console.log(view.getBounds());
-          });
           this.updateWidgetPositions(widgetPositions);
-          console.log("after");
-          views.forEach((view) => {
-            console.log(view.webContents.id);
-            console.log(view.getBounds());
-          });
           views.forEach((view) => {
             this.windowManager.getMainWindow().contentView.addChildView(view);
           });
