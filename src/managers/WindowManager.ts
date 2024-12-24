@@ -10,32 +10,45 @@ export class WindowManager {
     const { x, y } = secondDisplay.bounds;
 
     this.mainWindow = new BrowserWindow({
-        width: 1920,
-        height: 1080,
-        x,
-        y,
-        icon: "./src/assets/WinDash-logo.png",
-        transparent: true,
-        skipTaskbar: true,
-        frame: false,
-        webPreferences: {
-          nodeIntegration: true,
-          contextIsolation: false,
-          webSecurity: true,
-          preload: path.join(__dirname, "preload.js"),
-          autoplayPolicy: "no-user-gesture-required",
-          allowRunningInsecureContent: false,
-          experimentalFeatures: true,
-          partition: "persist:session",
-        },
-      });
+      width: 1920,
+      height: 1080,
+      x,
+      y,
+      icon: "./src/assets/WinDash-logo.png",
+      transparent: true,
+      skipTaskbar: true,
+      frame: false,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        webSecurity: true,
+        preload: path.join(__dirname, "preload.js"),
+        autoplayPolicy: "no-user-gesture-required",
+        allowRunningInsecureContent: false,
+        experimentalFeatures: true,
+        partition: "persist:session",
+      },
+    });
 
     this.mainWindow.maximize();
     this.mainWindow.on("closed", (): void => (this.mainWindow = null));
+    this.mainWindow.loadFile(path.join(__dirname, "../main.html"));
 
     ipcMain.on("close-window", () => {
-        this.mainWindow?.close();
-      });
+      this.mainWindow?.close();
+    });
+
+    ipcMain.on("toggle-devtools", () => {
+      if (!this.mainWindow) {
+        return;
+      }
+      const isDevToolsOpened = this.mainWindow.webContents.isDevToolsOpened();
+      if (isDevToolsOpened) {
+        this.mainWindow.webContents.closeDevTools();
+      } else {
+        this.mainWindow.webContents.openDevTools({ mode: "detach" });
+      }
+    });
   }
 
   public getMainWindow() {

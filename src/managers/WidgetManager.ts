@@ -1,4 +1,4 @@
-import { WebContentsView, BrowserWindow, session } from "electron";
+import { WebContentsView, session } from "electron";
 import { Widget } from "../models/Widget";
 import { calculateGridCellSize } from "../utils/gridUtils";
 import config from "../config";
@@ -22,10 +22,10 @@ export class WidgetManager {
 
   public initializeWidgets() {
     const { gridWidth, gridHeight } = calculateGridCellSize(
-        this.windowManager.getMainWindow().getBounds().width - 2 * PADDING,
-        this.windowManager.getMainWindow().getBounds().height - 2 * PADDING,
-        config
-      );
+      this.windowManager.getMainWindow().getBounds().width - 2 * PADDING,
+      this.windowManager.getMainWindow().getBounds().height - 2 * PADDING,
+      config
+    );
 
     config.widgets.forEach((widget: Widget) => {
       this.createWidget(widget, gridWidth, gridHeight);
@@ -68,6 +68,37 @@ export class WidgetManager {
     this.windowManager.getMainWindow().on("closed", () => {
       view.webContents.close();
     });
+
+    // Add a container below the WebContentsView for grid management (Drag and Drop)
+    this.createDraggableContainer(
+      widget.x * gridWidth + PADDING,
+      widget.y * gridHeight + PADDING,
+      widget.width * gridWidth,
+      widget.height * gridHeight
+    );
+  }
+
+  private createDraggableContainer(
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) {
+    const containerId = `container-${Math.floor(x)}-${Math.floor(y)}`;
+
+    this.windowManager.getMainWindow().webContents.executeJavaScript(`
+      var container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '${x}px';
+      container.style.top = '${y}px';
+      container.style.width = '${width}px';
+      container.style.height = '${height}px';
+      container.style.outline = '5px solid black' ;
+      container.style.backgroundColor = 'black';
+      container.classList.add('draggable-container');
+      container.id = '${containerId}';
+      document.body.appendChild(container);
+    `);
   }
 }
 

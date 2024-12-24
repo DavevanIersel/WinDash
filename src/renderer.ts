@@ -4,3 +4,11 @@
 // nodeIntegration is set to true in webPreferences.
 // Use preload.js to selectively enable features
 // needed in the renderer process.
+const { ipcRenderer } = require("electron");
+const devtoolsButton = document.getElementById("toggle-devtools");
+
+if (devtoolsButton) {
+  devtoolsButton.addEventListener("click", () => {
+    ipcRenderer.send("toggle-devtools");
+  });
+}
