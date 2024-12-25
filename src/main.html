@@ -1,16 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WinDash</title>
-    <link rel="stylesheet" href="./styles/styles.css">
-</head>
-<body>
-    <button id="toggle-devtools">Toggle DevTools</button>
-    <button id="edit">Edit</button>
-    <div id="grid-stack" style="display: none;"></div>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.22/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css"
+    />
+    <link rel="stylesheet" href="./styles/styles.css" />
+  </head>
+  <body>
+    <div class="flex flex-row justify-items-end gap-4 absolute top-4 right-4">
+      <button id="toggle-devtools" style="display: none;" class="btn">
+        DevTools
+        <i class="las la-tools"></i>
+      </button>
 
+      <button class="btn btn-circle btn-outline" id="settings-button">
+        <label for="config-button">
+            <div class="swap swap-rotate">
+              <input type="checkbox" id="settings-input" class="hidden" />
+              <i class="swap-on las la-times text-2xl"></i>
+              <i class="swap-off las la-cog text-2xl"></i>
+            </div>
+          </label>          
+      </button>
+    </div>
+
+    <div id="grid-stack" style="display: none"></div>
     <script src="renderer.js"></script>
-</body>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </body>
 </html>

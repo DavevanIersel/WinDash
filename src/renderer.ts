@@ -11,7 +11,8 @@ const moveHandleSize = 20;
 const devtoolsButton = document.getElementById("toggle-devtools");
 let isDevToolsOpen = false;
 
-const editButton = document.getElementById("edit");
+const settingsButton = document.getElementById("settings-button");
+const settingsCheckbox = document.getElementById("settings-input") as HTMLInputElement;
 let isEditing = false;
 
 /** @type {import('./models/Position').Position} */
@@ -24,13 +25,16 @@ if (devtoolsButton) {
   });
 }
 
-if (editButton) {
-  editButton.addEventListener("click", () => {
+if (settingsButton) {
+  settingsButton.addEventListener("click", () => {
     isEditing = !isEditing;
-    editButton.innerText = isEditing ? "Save" : "Edit";
+    settingsCheckbox.checked = isEditing;
     const gridStack = document.getElementById("grid-stack");
     if (gridStack) {
       gridStack.style.display = isEditing ? "block" : "none";
+    }
+    if (devtoolsButton) {
+      devtoolsButton.style.display = isEditing ? "inline-flex" : "none";
     }
     if (!isEditing) {
       ipcRenderer.send("update-widget-positions", widgetPositions, true);

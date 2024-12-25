@@ -40,7 +40,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     if (
-      ["BUTTON", "INPUT", "SELECT", "TEXTAREA", "CANVAS"].includes(el.tagName)
+      ["BUTTON", "INPUT", "SELECT", "TEXTAREA", "CANVAS", "DIV", "LABEL", "I"].includes(el.tagName)
     ) {
       return true;
     }
