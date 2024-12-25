@@ -27,11 +27,14 @@ if (devtoolsButton) {
 if (editButton) {
   editButton.addEventListener("click", () => {
     isEditing = !isEditing;
+    editButton.innerText = isEditing ? "Save" : "Edit";
     const gridStack = document.getElementById("grid-stack");
     if (gridStack) {
       gridStack.style.display = isEditing ? "block" : "none";
     }
-    ipcRenderer.send("toggle-edit", isEditing, widgetPositions);
+    if (!isEditing) {
+      ipcRenderer.send("update-widget-positions", widgetPositions, true);
+    }
   });
 }
 
@@ -162,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       height: newPos.height ?? oldPos.height,
     });
 
-    ipcRenderer.send("toggle-edit", false, widgetPositions);
+    ipcRenderer.send("update-widget-positions", widgetPositions, false);
   }
 
   // Adjust stage size on window resize

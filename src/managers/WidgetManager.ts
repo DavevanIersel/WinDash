@@ -20,7 +20,6 @@ export class WidgetManager {
   }
 
   public initializeWidgets() {
-
     config.widgets.forEach((widget: Widget) => {
       this.createWidget(widget);
     });
@@ -28,11 +27,9 @@ export class WidgetManager {
     overwriteUserAgents();
 
     ipcMain.on(
-      "toggle-edit",
-      (event, editing: boolean, widgetPositions: Map<number, Position>) => {
-        if (!editing) {
-          this.updateWidgetPositions(widgetPositions);
-        }
+      "update-widget-positions",
+      (event, widgetPositions: Map<number, Position>, save: boolean) => {
+        this.updateWidgetPositions(widgetPositions, save);
       }
     );
   }
@@ -96,7 +93,7 @@ export class WidgetManager {
     });
   }
 
-  private updateWidgetPositions(widgetPositions: Map<number, Position>) {
+  private updateWidgetPositions(widgetPositions: Map<number, Position>, save: boolean) {
     widgetPositions.forEach((position, id) => {
       const widget = widgetWebContentsMap.get(id);
       if (widget) {
@@ -109,13 +106,15 @@ export class WidgetManager {
         });
 
         const view = views.find((view) => view.webContents.id === id);
-        config.saveWidget(widget);
+        if (save) {
+          config.saveWidget(widget);
+        }
         view?.setBounds({
-            x: position.x,
-            y: position.y,
-            width: position.width,
-            height: position.height,
-          });
+          x: position.x,
+          y: position.y,
+          width: position.width,
+          height: position.height,
+        });
       }
     });
   }

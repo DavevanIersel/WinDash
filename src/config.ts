@@ -71,8 +71,6 @@ const saveWidgetConfig = (widget: Widget) => {
   const filename = `${widget.id}${WIDGET_FILE_EXTENSION}`;
   const filePath = path.join(widgetsFolder, filename);
 
-  console.log(`Saving widget to: ${filePath}`);
-
   const gridCoordinates = pixelsToGridCoordinates(
     widget.x,
     widget.y,
