@@ -108,9 +108,9 @@ export class WidgetManager {
           height: position.height,
         });
 
-        views
-          .find((view) => view.webContents.id === id)
-          ?.setBounds({
+        const view = views.find((view) => view.webContents.id === id);
+        config.saveWidget(widget);
+        view?.setBounds({
             x: position.x,
             y: position.y,
             width: position.width,
