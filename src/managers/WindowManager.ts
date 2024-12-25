@@ -6,7 +6,7 @@ export class WindowManager {
 
   public createMainWindow() {
     const displays = screen.getAllDisplays();
-    const secondDisplay = displays[2];
+    const secondDisplay = displays[1];
     const { x, y } = secondDisplay.bounds;
 
     this.mainWindow = new BrowserWindow({
@@ -22,7 +22,7 @@ export class WindowManager {
         nodeIntegration: true,
         contextIsolation: false,
         webSecurity: true,
-        preload: path.join(__dirname, "preload.js"),
+        preload: path.join(__dirname, "../preload.js"),
         autoplayPolicy: "no-user-gesture-required",
         allowRunningInsecureContent: false,
         experimentalFeatures: true,
@@ -46,6 +46,17 @@ export class WindowManager {
         this.mainWindow.webContents.openDevTools({ mode: "detach" });
       } else {
         this.mainWindow.webContents.closeDevTools();
+      }
+    });
+
+    // Handle pass through when clicking on transparent parts of the window (called by preload.ts)
+    ipcMain.on("set-click-through", (event, shouldPassThrough: boolean) => {
+      if (this.mainWindow) {
+        if (shouldPassThrough) {
+          this.mainWindow.setIgnoreMouseEvents(true, { forward: true }); 
+        } else {
+          this.mainWindow.setIgnoreMouseEvents(false);
+        }
       }
     });
   }

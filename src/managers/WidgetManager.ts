@@ -24,6 +24,18 @@ export class WidgetManager {
       this.createWidget(widget);
     });
 
+    const widgetPositions = new Map<number, Position>();
+    widgetWebContentsMap.forEach((widget, id) => {
+      widgetPositions.set(id, {
+        x: widget.x,
+        y: widget.y,
+        width: widget.width,
+        height: widget.height,
+      });
+    });
+
+    this.sendWidgetPositions(widgetPositions);
+
     overwriteUserAgents();
 
     ipcMain.on(
@@ -93,7 +105,11 @@ export class WidgetManager {
     });
   }
 
-  private updateWidgetPositions(widgetPositions: Map<number, Position>, save: boolean) {
+  private updateWidgetPositions(
+    widgetPositions: Map<number, Position>,
+    save: boolean
+  ) {
+    this.sendWidgetPositions(widgetPositions);
     widgetPositions.forEach((position, id) => {
       const widget = widgetWebContentsMap.get(id);
       if (widget) {
@@ -117,6 +133,17 @@ export class WidgetManager {
         });
       }
     });
+  }
+
+  //Update positions for click pass through calculations (preload.ts)
+  private sendWidgetPositions(widgetPositions: Map<number, Position>) {
+    const mainWindow = this.windowManager.getMainWindow();
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send(
+        "widget-location-update-for-preload",
+        widgetPositions
+      );
+    }
   }
 }
 
