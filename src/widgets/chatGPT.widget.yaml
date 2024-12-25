@@ -1,9 +1,9 @@
 url: 'https://chatgpt.com/'
-enabled: false
+enabled: true
 x: 2
 y: 2
 width: 15
 height: 8
 touchEnabled: false
 customUserAgent:
-  'cloudflare.com': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0'
+  'chatgpt': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0'
