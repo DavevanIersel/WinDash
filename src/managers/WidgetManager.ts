@@ -9,7 +9,7 @@ import { Position } from "../models/Position";
 const widgetWebContentsMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
 
-const cssPath = join(__dirname, "../styles/styles.css");
+const cssPath = join(__dirname, "../styles/widget-styles.css");
 const cssContent = readFileSync(cssPath, "utf-8");
 
 export class WidgetManager {
