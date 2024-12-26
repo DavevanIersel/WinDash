@@ -48,7 +48,16 @@ export class WidgetManager {
 
   private createWidget(widget: Widget) {
     const view = new WebContentsView();
-    view.webContents.loadURL(widget.url);
+
+    if (widget.html) {
+      const localFilePath = join(__dirname, "../widgets",widget.html);
+      view.webContents.loadFile(localFilePath);
+    } else if (widget.url) {
+      view.webContents.loadURL(widget.url);
+    } else {
+      console.error("Widget must have either a 'url' or 'html'.");
+      return;
+    }
 
     widgetWebContentsMap.set(view.webContents.id, widget);
     view.setBounds({

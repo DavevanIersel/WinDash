@@ -1,21 +1,23 @@
-import * as yaml from 'js-yaml';
-import * as fs from 'fs';
-import * as path from 'path';
-import { app } from 'electron';
-import { Widget } from './models/Widget';
-import { gridToPixelCoordinates, pixelsToGridCoordinates } from './utils/gridUtils';
+import * as yaml from "js-yaml";
+import * as path from "path";
+import { app } from "electron";
+import { Widget } from "./models/Widget";
+import {
+  gridToPixelCoordinates,
+  pixelsToGridCoordinates,
+} from "./utils/gridUtils";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { join } from "path";
 
-const WIDGET_FILE_EXTENSION = '.widget.yaml';
+const WIDGET_FILE_EXTENSION = ".widget.yaml";
 
-const isPackaged = process.mainModule?.filename.includes('app.asar');
-const baseFolder = isPackaged
-  ? app.getPath('userData')
-  : __dirname;
+const isPackaged = process.mainModule?.filename.includes("app.asar");
+const baseFolder = isPackaged ? app.getPath("userData") : __dirname;
 
-const widgetsFolder = path.join(baseFolder, 'widgets');
+const widgetsFolder = path.join(baseFolder, "widgets");
 
-if (!fs.existsSync(widgetsFolder)) {
-  fs.mkdirSync(widgetsFolder, { recursive: true });
+if (!existsSync(widgetsFolder)) {
+  mkdirSync(widgetsFolder, { recursive: true });
 }
 
 interface Grid {
@@ -29,17 +31,22 @@ export interface Config {
 }
 
 const loadWidgetConfig = (filename: string): Widget | null => {
-  const archiveFilePath = path.join(__dirname, 'widgets', filename);
+  const archiveFilePath = path.join(__dirname, "widgets", filename);
   const writableFilePath = path.join(widgetsFolder, filename);
 
-  const filePath = fs.existsSync(writableFilePath)
+  const filePath = existsSync(writableFilePath)
     ? writableFilePath
     : archiveFilePath;
 
   try {
-    const fileContents = fs.readFileSync(filePath, 'utf8');
+    const fileContents = readFileSync(filePath, "utf8");
     const widget = yaml.load(fileContents) as Widget;
-    const size = gridToPixelCoordinates(widget.x, widget.y, widget.width, widget.height);
+    const size = gridToPixelCoordinates(
+      widget.x,
+      widget.y,
+      widget.width,
+      widget.height
+    );
     return {
       ...widget,
       id: filename.slice(0, -WIDGET_FILE_EXTENSION.length),
@@ -54,18 +61,30 @@ const loadWidgetConfig = (filename: string): Widget | null => {
   }
 };
 
-const loadAllWidgets = (): Widget[] => {
-  try {
-    return fs
-      .readdirSync(widgetsFolder)
-      .filter((file) => file.endsWith(WIDGET_FILE_EXTENSION))
-      .map(loadWidgetConfig)
-      .filter((config) => config !== null && config.enabled) as Widget[];
-  } catch (e) {
-    console.error('Error reading widgets folder:', e);
-    return [];
+
+const getWidgetFiles = (dir: string, baseDir: string = dir): string[] => {
+  const entries = readdirSync(dir, { encoding: "utf-8" });
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry);
+
+    if (statSync(fullPath).isDirectory()) {
+      files.push(...getWidgetFiles(fullPath, baseDir));
+    } else if (fullPath.endsWith(WIDGET_FILE_EXTENSION)) {
+      files.push(path.relative(baseDir, fullPath));
+    }
   }
+
+  return files;
 };
+
+const loadWidgets = (): Widget[] => {
+  return getWidgetFiles(widgetsFolder)
+    .map((file) => loadWidgetConfig(file))
+    .filter((config): config is Widget => config !== null && config.enabled);
+};
+
 
 const saveWidgetConfig = (widget: Widget) => {
   const filename = `${widget.id}${WIDGET_FILE_EXTENSION}`;
@@ -88,14 +107,14 @@ const saveWidgetConfig = (widget: Widget) => {
 
   try {
     const yamlString = yaml.dump(widgetToSave);
-    fs.writeFileSync(filePath, yamlString, 'utf8');
+    writeFileSync(filePath, yamlString, "utf8");
   } catch (e) {
     console.error(`Error saving widget to file ${filename}:`, e);
   }
 };
 
 const config: Config = {
-  widgets: loadAllWidgets(),
+  widgets: loadWidgets(),
   saveWidget: saveWidgetConfig,
 };
 

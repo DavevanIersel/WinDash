@@ -1,5 +1,6 @@
 export interface Widget {
   id: string;                                     // Generated from filename
+  html: string                                    // The html page that should be loaded for a custom widget
   url: string;                                    // The url which should be loaded
   x: number;                                      // Horizontal postion of the upper left corner of the widget
   y: number;                                      // Vertical postion of the upper left corner of the widget
