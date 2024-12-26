@@ -1,0 +1,12 @@
+{
+  "$schema": "widget-schema.json",
+  "url": "https://web.whatsapp.com/",
+  "enabled": true,
+  "x": 2,
+  "y": 2,
+  "width": 15,
+  "height": 8,
+  "customUserAgent": {
+    "whatsapp": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.131 Safari/537.36"
+  }
+}
