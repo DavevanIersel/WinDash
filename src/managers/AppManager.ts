@@ -30,12 +30,8 @@ export class AppManager {
 
     app.on("window-all-closed", this.onAllWindowsClosed);
   
-    ipcMain.on("toggle-library", (event, open: boolean) => {
-      if (open) {
-        this.widgetLibraryManager.createLibraryWindow();
-      } else {
-        this.widgetLibraryManager.closeLibraryWindow();
-      }
+    ipcMain.on("toggle-library", () => {
+      this.widgetLibraryManager.toggleLibraryWindow();
     });
   }
 

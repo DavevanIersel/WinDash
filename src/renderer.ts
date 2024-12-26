@@ -12,7 +12,6 @@ const devtoolsButton = document.getElementById("toggle-devtools");
 let isDevToolsOpen = false;
 
 const librarybutton = document.getElementById("toggle-library");
-let isLibraryOpen = false;
 
 const settingsButton = document.getElementById("settings-button");
 const settingsCheckbox = document.getElementById("settings-input") as HTMLInputElement;
@@ -30,8 +29,7 @@ if (devtoolsButton) {
 
 if (librarybutton) {
   librarybutton.addEventListener("click", () => {
-    isLibraryOpen = !isLibraryOpen;
-    ipcRenderer.send("toggle-library", isLibraryOpen);
+    ipcRenderer.send("toggle-library");
   });
 }
 

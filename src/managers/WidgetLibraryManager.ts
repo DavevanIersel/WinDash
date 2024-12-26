@@ -34,7 +34,11 @@ export class WidgetLibraryManager {
     });
   }
 
-  public closeLibraryWindow() {
-    this.libraryWindow.close();
+  public toggleLibraryWindow() {
+    if (this.libraryWindow) {
+        this.libraryWindow.close();
+    } else {
+        this.createLibraryWindow();
+    }
   }
 }
