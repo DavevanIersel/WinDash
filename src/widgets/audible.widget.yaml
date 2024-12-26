@@ -1,9 +1,0 @@
-url: 'https://www.audible.co.uk/library/titles'
-enabled: false
-x: 2
-y: 2
-width: 15
-height: 8
-touchEnabled: true
-customUserAgent:
-  'www.audible.co.uk': 'Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0'

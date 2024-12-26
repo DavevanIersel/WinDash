@@ -1,0 +1,81 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Generated from filename"
+      },
+      "html": {
+        "type": "string",
+        "description": "The HTML page that should be loaded for a custom widget"
+      },
+      "url": {
+        "type": "string",
+        "description": "The URL which should be loaded"
+      },
+      "x": {
+        "type": "number",
+        "description": "Horizontal position of the upper left corner of the widget"
+      },
+      "y": {
+        "type": "number",
+        "description": "Vertical position of the upper left corner of the widget"
+      },
+      "width": {
+        "type": "number",
+        "description": "Width of the widget"
+      },
+      "height": {
+        "type": "number",
+        "description": "Height of the widget"
+      },
+      "touchEnabled": {
+        "type": "boolean",
+        "description": "Indicates whether touch controls are simulated, especially great in combination with a mobile user agent"
+      },
+      "enabled": {
+        "type": "boolean",
+        "description": "Toggle widget on or off"
+      },
+      "customUserAgent": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string",
+          "description": "A custom user agent for a specific domain"
+        },
+        "description": "Mapping of domains to custom user agents"
+      },
+      "customScript": {
+        "type": "string",
+        "description": "A custom JS script you want to be loaded on the widget webpage"
+      },
+      "devTools": {
+        "type": "boolean",
+        "description": "Enable developer tools for this widget"
+      }
+    },
+    "anyOf": [
+      {
+        "required": ["html"],
+        "not": {
+          "required": ["url"]
+        }
+      },
+      {
+        "required": ["url"],
+        "not": {
+          "required": ["html"]
+        }
+      }
+    ],
+    "required": [
+      "x",
+      "y",
+      "width",
+      "height",
+      "enabled"
+    ],
+    "additionalProperties": true
+  }
+  

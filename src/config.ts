@@ -1,4 +1,3 @@
-import * as yaml from "js-yaml";
 import * as path from "path";
 import { app } from "electron";
 import { Widget } from "./models/Widget";
@@ -9,7 +8,7 @@ import {
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { join } from "path";
 
-const WIDGET_FILE_EXTENSION = ".widget.yaml";
+const WIDGET_FILE_EXTENSION = ".widget.json";
 
 const isPackaged = process.mainModule?.filename.includes("app.asar");
 const baseFolder = isPackaged ? app.getPath("userData") : __dirname;
@@ -40,7 +39,7 @@ const loadWidgetConfig = (filename: string): Widget | null => {
 
   try {
     const fileContents = readFileSync(filePath, "utf8");
-    const widget = yaml.load(fileContents) as Widget;
+    const widget = JSON.parse(fileContents) as Widget;
     const size = gridToPixelCoordinates(
       widget.x,
       widget.y,
@@ -106,8 +105,8 @@ const saveWidgetConfig = (widget: Widget) => {
   };
 
   try {
-    const yamlString = yaml.dump(widgetToSave);
-    writeFileSync(filePath, yamlString, "utf8");
+    const jsonWidget = JSON.stringify(widgetToSave, null, 2);
+    writeFileSync(filePath, jsonWidget, "utf8");
   } catch (e) {
     console.error(`Error saving widget to file ${filename}:`, e);
   }

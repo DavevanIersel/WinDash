@@ -45,7 +45,6 @@
     "@ghostery/adblocker-electron": "^2.3.1",
     "canvas": "^3.0.0",
     "cross-fetch": "^4.1.0",
-    "js-yaml": "^4.1.0",
     "konva": "^9.3.18"
   }
 }
