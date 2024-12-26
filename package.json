@@ -23,7 +23,7 @@
   },
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc && xcopy src\\widgets dist\\widgets /E /I /Y && xcopy src\\styles dist\\styles /E /I /Y && xcopy src\\assets dist\\assets /E /I /Y && copy src\\main.html dist\\main.html",
+    "build": "tsc && xcopy src\\widgets dist\\widgets /E /I /Y && xcopy src\\styles dist\\styles /E /I /Y && xcopy src\\assets dist\\assets /E /I /Y && copy src\\main.html dist\\main.html && xcopy src\\views dist\\views /E /I /Y",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",

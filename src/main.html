@@ -17,19 +17,24 @@
   </head>
   <body>
     <div class="flex flex-row justify-items-end gap-4 absolute top-4 right-4">
-      <button id="toggle-devtools" style="display: none;" class="btn">
+      <button id="toggle-library" style="display: none" class="btn">
+        Widget Library
+        <i class="las la-icons"></i>
+      </button>
+
+      <button id="toggle-devtools" style="display: none" class="btn">
         DevTools
         <i class="las la-tools"></i>
       </button>
 
       <button class="btn btn-circle btn-outline" id="settings-button">
         <label for="config-button">
-            <div class="swap swap-rotate">
-              <input type="checkbox" id="settings-input" class="hidden" />
-              <i class="swap-on las la-times text-2xl"></i>
-              <i class="swap-off las la-cog text-2xl"></i>
-            </div>
-          </label>          
+          <div class="swap swap-rotate">
+            <input type="checkbox" id="settings-input" class="hidden" />
+            <i class="swap-on las la-times text-2xl"></i>
+            <i class="swap-off las la-cog text-2xl"></i>
+          </div>
+        </label>
       </button>
     </div>
 

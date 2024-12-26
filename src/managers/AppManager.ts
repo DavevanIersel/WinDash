@@ -1,18 +1,21 @@
-import { app, components, session } from "electron";
+import { app, components, ipcMain, session } from "electron";
 import { WindowManager } from "./WindowManager";
 import { TrayManager } from "./TrayManager";
 import { WidgetManager } from "./WidgetManager";
 import { ElectronBlocker } from "@ghostery/adblocker-electron";
+import { WidgetLibraryManager } from "./WidgetLibraryManager";
 
 export class AppManager {
   private windowManager: WindowManager;
   private trayManager: TrayManager;
   private widgetManager: WidgetManager;
+  private widgetLibraryManager: WidgetLibraryManager;
 
   constructor() {
     this.windowManager = new WindowManager();
     this.trayManager = new TrayManager();
     this.widgetManager = new WidgetManager(this.windowManager);
+    this.widgetLibraryManager = new WidgetLibraryManager();
   }
 
   public async initialize() {
@@ -26,6 +29,14 @@ export class AppManager {
     this.widgetManager.initializeWidgets();
 
     app.on("window-all-closed", this.onAllWindowsClosed);
+  
+    ipcMain.on("toggle-library", (event, open: boolean) => {
+      if (open) {
+        this.widgetLibraryManager.createLibraryWindow();
+      } else {
+        this.widgetLibraryManager.closeLibraryWindow();
+      }
+    });
   }
 
   private onAllWindowsClosed() {

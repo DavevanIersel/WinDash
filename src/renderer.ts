@@ -11,6 +11,9 @@ const moveHandleSize = 20;
 const devtoolsButton = document.getElementById("toggle-devtools");
 let isDevToolsOpen = false;
 
+const librarybutton = document.getElementById("toggle-library");
+let isLibraryOpen = false;
+
 const settingsButton = document.getElementById("settings-button");
 const settingsCheckbox = document.getElementById("settings-input") as HTMLInputElement;
 let isEditing = false;
@@ -25,6 +28,13 @@ if (devtoolsButton) {
   });
 }
 
+if (librarybutton) {
+  librarybutton.addEventListener("click", () => {
+    isLibraryOpen = !isLibraryOpen;
+    ipcRenderer.send("toggle-library", isLibraryOpen);
+  });
+}
+
 if (settingsButton) {
   settingsButton.addEventListener("click", () => {
     isEditing = !isEditing;
@@ -35,6 +45,9 @@ if (settingsButton) {
     }
     if (devtoolsButton) {
       devtoolsButton.style.display = isEditing ? "inline-flex" : "none";
+    }
+    if (librarybutton) {
+      librarybutton.style.display = isEditing ? "inline-flex" : "none";
     }
     if (!isEditing) {
       ipcRenderer.send("update-widget-positions", widgetPositions, true);
