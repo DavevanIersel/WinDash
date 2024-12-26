@@ -1,0 +1,13 @@
+{
+  "$schema": "widget-schema.json",
+  "url": "https://to-do.live.com/tasks/AQMkADAwATM3ZmYAZS1jYTEzLTY1YjktMDACLTAwCgAuAAADyqr38IduTEGsZZ2vTL9i7QEAwnT1PlmmVkCwuln8igKb4AAHX-siuQAAAA==",
+  "enabled": true,
+  "x": 2,
+  "y": 2,
+  "width": 15,
+  "height": 8,
+  "touchEnabled": false,
+  "customUserAgent": {
+    "chatgpt": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
+  }
+}
