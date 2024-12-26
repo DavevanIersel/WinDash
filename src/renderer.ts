@@ -14,7 +14,9 @@ let isDevToolsOpen = false;
 const librarybutton = document.getElementById("toggle-library");
 
 const settingsButton = document.getElementById("settings-button");
-const settingsCheckbox = document.getElementById("settings-input") as HTMLInputElement;
+const settingsCheckbox = document.getElementById(
+  "settings-input"
+) as HTMLInputElement;
 let isEditing = false;
 
 /** @type {import('./models/Position').Position} */
@@ -22,8 +24,11 @@ let widgetPositions = new Map();
 
 if (devtoolsButton) {
   devtoolsButton.addEventListener("click", () => {
-    isDevToolsOpen = !isDevToolsOpen;
     ipcRenderer.send("toggle-devtools", isDevToolsOpen);
+  });
+
+  ipcRenderer.on("devtools-status", (_event, openedState) => {
+    isDevToolsOpen = openedState;
   });
 }
 
