@@ -48,7 +48,7 @@ export class WindowManager {
     });
 
     // Handle pass through when clicking on transparent parts of the window (called by preload.ts)
-    ipcMain.on("set-click-through", (event, shouldPassThrough: boolean) => {
+    ipcMain.on("set-click-through", (_event, shouldPassThrough: boolean) => {
       if (this.mainWindow) {
         if (shouldPassThrough) {
           this.mainWindow.setIgnoreMouseEvents(true, { forward: true }); 

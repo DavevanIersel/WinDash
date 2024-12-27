@@ -3,10 +3,10 @@
   "name": "Buienradar",
   "url": "https://www.buienradar.nl/",
   "enabled": true,
-  "x": 29,
-  "y": 2,
-  "width": 8,
-  "height": 17,
+  "x": 58,
+  "y": 4,
+  "width": 16,
+  "height": 34,
   "touchEnabled": false,
   "customScript": "const pauseButton = document.querySelector('.btn-pause');\n\nif (pauseButton && pauseButton.style.display !== 'none') {\n    pauseButton.click();\n} else {\n    const observer = new MutationObserver(() => {\n        if (pauseButton && pauseButton.style.display !== 'none') {\n            pauseButton.click();\n            observer.disconnect(); // Stop observing once the button is clicked\n        }\n    });\n    observer.observe(document.body, { childList: true, subtree: true });\n}"
 }

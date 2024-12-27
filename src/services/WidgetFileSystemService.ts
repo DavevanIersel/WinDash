@@ -13,15 +13,16 @@ import {
   writeFileSync,
 } from "fs";
 import { join, relative } from "path";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 const WIDGET_FILE_EXTENSION = ".widget.json";
 const WIDGET_FOLDER_RELATIVE_PATH = "./widgets";
 const FILE_ENCODING = "utf8";
 
 const isPackaged = require.main?.filename.includes("app.asar");
-const baseFolder = isPackaged ? app.getPath("userData") : __dirname;
-const widgetsFolder = join(baseFolder, WIDGET_FOLDER_RELATIVE_PATH);
+const widgetsFolder = isPackaged
+  ? join(app.getPath("userData"), WIDGET_FOLDER_RELATIVE_PATH)
+  : join(__dirname, `.${WIDGET_FOLDER_RELATIVE_PATH}`);
 
 if (!existsSync(widgetsFolder)) {
   mkdirSync(widgetsFolder, { recursive: true });
@@ -31,11 +32,15 @@ class WidgetFileSystemService {
   private widgets: Widget[] = [];
 
   constructor() {
-    this.widgets = this.getWidgetFileContentsRecursive(widgetsFolder)
-      .map((widgetFile) => this.loadWidgetConfig(widgetFile));
+    this.widgets = this.getWidgetFileContentsRecursive(widgetsFolder).map(
+      (widgetFile) => this.loadWidgetConfig(widgetFile)
+    );
   }
 
-  private getWidgetFileContentsRecursive(dir: string, baseDir: string = dir): string[] {
+  private getWidgetFileContentsRecursive(
+    dir: string,
+    baseDir: string = dir
+  ): string[] {
     const files = readdirSync(dir, { encoding: "utf-8" });
     const fileContents: string[] = [];
 
@@ -43,7 +48,9 @@ class WidgetFileSystemService {
       const fullPath = join(dir, file);
 
       if (statSync(fullPath).isDirectory()) {
-        fileContents.push(...this.getWidgetFileContentsRecursive(fullPath, baseDir));
+        fileContents.push(
+          ...this.getWidgetFileContentsRecursive(fullPath, baseDir)
+        );
       } else if (fullPath.endsWith(WIDGET_FILE_EXTENSION)) {
         fileContents.push(relative(baseDir, fullPath));
       }
@@ -77,7 +84,7 @@ class WidgetFileSystemService {
         ...widget,
         id: uuidv4(),
         fileName: filename,
-        ...pixelCoordinates
+        ...pixelCoordinates,
       };
     } catch (e) {
       console.error(`Error reading JSON file ${filename}:`, e);
@@ -102,7 +109,7 @@ class WidgetFileSystemService {
 
     const widgetToSave = {
       ...widget,
-      ...gridCoordinates
+      ...gridCoordinates,
     };
 
     try {

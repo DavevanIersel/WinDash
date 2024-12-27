@@ -1,4 +1,4 @@
-import { WebContentsView, ipcMain, session } from "electron";
+import { WebContentsView, ipcMain, session, dialog } from "electron";
 import { Widget } from "../models/Widget";
 import { WindowManager } from "./WindowManager";
 import { join } from "path";
@@ -92,6 +92,21 @@ export class WidgetManager {
 
     this.windowManager.getMainWindow().on("closed", () => {
       view.webContents?.close();
+    });
+    
+    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+      dialog.showMessageBox(this.windowManager.getMainWindow(), {
+        type: 'question',
+        buttons: ['Allow', 'Deny'],
+        defaultId: 0,
+        title: 'Permission Request',
+        message: `${viewIdToWidgetMap.get(webContents.id)?.name ?? 'An unknown widget'} wants to use the "${permission}" permission. Do you allow it?`
+      }).then(result => {
+        callback(result.response === 0);
+      }).catch(err => {
+        console.error(err);
+        callback(false);
+      });
     });
 
     // Add a container below the WebContentsView for grid management (Drag and Drop)
