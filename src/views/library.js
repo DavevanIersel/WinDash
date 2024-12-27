@@ -6,13 +6,11 @@ ipcRenderer.on("update-widgets", (_event, widgets) => {
   // Clear existing rows
   container.innerHTML = "";
 
-  // Iterate through widgets and build rows
   widgets.forEach((widget) => {
     const widgetRow = document.createElement("tr");
 
-    // Status column with centered badge
     const status = document.createElement("td");
-    status.classList.add("text-center", "whitespace-nowrap"); // Center the badge and prevent wrapping
+    status.classList.add("text-center", "whitespace-nowrap");
     const statusBadge = document.createElement("div");
     statusBadge.classList.add(
       "badge",
@@ -22,21 +20,18 @@ ipcRenderer.on("update-widgets", (_event, widgets) => {
     status.appendChild(statusBadge);
     widgetRow.appendChild(status);
 
-    // Name column, small size
     const name = document.createElement("td");
-    name.classList.add("whitespace-nowrap"); // Prevent wrapping for name column
+    name.classList.add("whitespace-nowrap");
     name.textContent = widget.name;
     widgetRow.appendChild(name);
 
-    // Description column (this can have longer text)
     const description = document.createElement("td");
     description.style.width = "90%";
     description.textContent = widget.description;
     widgetRow.appendChild(description);
 
-    // Action column with button, small size
     const action = document.createElement("td");
-    action.classList.add("whitespace-nowrap"); // Prevent wrapping for action column
+    action.classList.add("whitespace-nowrap");
 
     //Toggle widget input
     const toggleWidgetInput = document.createElement("input");
