@@ -22,6 +22,8 @@ let isEditing = false;
 /** @type {import('./models/Position').Position} */
 let widgetPositions = new Map();
 
+let widgetIdToKonvaGroupMap = new Map();
+
 if (devtoolsButton) {
   devtoolsButton.addEventListener("click", () => {
     ipcRenderer.send("toggle-devtools", isDevToolsOpen);
@@ -71,21 +73,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   ipcRenderer.on(
     "create-draggable-widget",
-    (event, id, x, y, width, height) => {
-      createDraggableWidget(id, { x, y, width, height });
+    (_event, widgetId, viewId, x, y, width, height) => {
+      createDraggableWidget(widgetId, viewId, { x, y, width, height });
     }
   );
 
-  ipcRenderer.on("update-widget-data", (_event, widget) => {
-    if (!widget.enabled) {
-    }
+  ipcRenderer.on("remove-draggable-widget", (_event, widget) => {
+    widgetIdToKonvaGroupMap.get(widget.id).destroy();
+    layer.draw();
   });
 
   function createDraggableWidget(
-    id: number,
+    widgetId: string,
+    viewId: number,
     position: { x: number; y: number; width: number; height: number }
   ) {
-    widgetPositions.set(id, position);
+    widgetPositions.set(viewId, position);
 
     const widgetGroup = new Konva.Group({
       x: snapToGrid(position.x),
@@ -136,10 +139,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       moveHandle.position({
         x: widgetGroup.width(),
-        y: - moveHandleSize,
+        y: -moveHandleSize,
       });
 
-      updateWidgetPosition(id, { x: newX, y: newY });
+      updateWidgetPosition(viewId, { x: newX, y: newY });
       layer.draw();
     });
 
@@ -160,13 +163,14 @@ document.addEventListener("DOMContentLoaded", () => {
         y: -moveHandleSize,
       });
 
-      updateWidgetPosition(id, { width: newWidth, height: newHeight });
+      updateWidgetPosition(viewId, { width: newWidth, height: newHeight });
       layer.draw();
     });
 
     widgetGroup.add(resizeHandle);
     widgetGroup.add(moveHandle);
     layer.add(widgetGroup);
+    widgetIdToKonvaGroupMap.set(widgetId, widgetGroup);
     layer.draw();
   }
 

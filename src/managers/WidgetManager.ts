@@ -91,6 +91,7 @@ export class WidgetManager {
 
     // Add a container below the WebContentsView for grid management (Drag and Drop)
     this.createDraggableWidgetFromMain(
+      widget.id,
       view.webContents.id,
       widget.x,
       widget.y,
@@ -101,23 +102,39 @@ export class WidgetManager {
   }
 
   public createDraggableWidgetFromMain(
-    id: number,
+    widgetId: string,
+    viewId: number,
     x: number,
     y: number,
     width: number,
     height: number
   ) {
-   
-  const mainWindow = this.windowManager.getMainWindow();
-  const webContents = mainWindow.webContents;
+    const mainWindow = this.windowManager.getMainWindow();
+    const webContents = mainWindow.webContents;
 
-  if (webContents.isLoading()) {
-    webContents.on("did-finish-load", () => {
-      webContents.send("create-draggable-widget", id, x, y, width, height);
-    });
-  } else {
-    webContents.send("create-draggable-widget", id, x, y, width, height);
-  }
+    if (webContents.isLoading()) {
+      webContents.on("did-finish-load", () => {
+        webContents.send(
+          "create-draggable-widget",
+          widgetId,
+          viewId,
+          x,
+          y,
+          width,
+          height
+        );
+      });
+    } else {
+      webContents.send(
+        "create-draggable-widget",
+        widgetId,
+        viewId,
+        x,
+        y,
+        width,
+        height
+      );
+    }
   }
 
   private updateWidgetPositions(
@@ -194,6 +211,9 @@ export class WidgetManager {
         view.webContents.close();
       }
     }
+    this.windowManager
+      .getMainWindow()
+      .webContents.send("remove-draggable-widget", widget);
   }
 }
 
