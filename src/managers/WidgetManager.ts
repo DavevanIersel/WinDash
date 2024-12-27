@@ -1,10 +1,10 @@
 import { WebContentsView, ipcMain, session } from "electron";
 import { Widget } from "../models/Widget";
-import config from "../config";
 import { WindowManager } from "./WindowManager";
 import { join } from "path";
 import { readFileSync } from "fs";
 import { Position } from "../models/Position";
+import WidgetFileSystemService from "../services/WidgetFileSystemService";
 
 const viewIdToWidgetMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
@@ -14,13 +14,18 @@ const cssContent = readFileSync(cssPath, "utf-8");
 
 export class WidgetManager {
   private windowManager: WindowManager;
+  private widgetFileSystemService: WidgetFileSystemService;
 
-  constructor(windowManager: WindowManager) {
+  constructor(
+    windowManager: WindowManager,
+    widgetFileSystemService: WidgetFileSystemService
+  ) {
     this.windowManager = windowManager;
+    this.widgetFileSystemService = widgetFileSystemService;
   }
 
   public initializeWidgets() {
-    config.enabledWidgets.forEach((widget: Widget) => {
+    this.widgetFileSystemService.getWidgets(false).forEach((widget: Widget) => {
       this.createWidget(widget);
     });
     this.sendWidgetPositions();
@@ -155,7 +160,7 @@ export class WidgetManager {
 
         const view = views.find((view) => view.webContents.id === id);
         if (save) {
-          config.saveWidget(widget);
+          this.widgetFileSystemService.saveWidgetConfig(widget);
         }
         view?.setBounds({
           x: position.x,

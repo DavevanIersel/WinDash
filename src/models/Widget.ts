@@ -1,5 +1,9 @@
 export interface Widget {
+  // Generated
   id: string;                                     // Generated from filename
+  fileName: string;                               // The filename for the widgetConfig, filled by WidgetFileSystemService
+
+  // User given
   name: string                                    // A name for the widget, this does not have to be unique
   html: string                                    // The html page that should be loaded for a custom widget
   url: string;                                    // The url which should be loaded

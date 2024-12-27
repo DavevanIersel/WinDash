@@ -1,10 +1,15 @@
 import { BrowserWindow, ipcMain, screen } from "electron";
 import * as path from "path";
-import config from "../config";
 import { Widget } from "../models/Widget";
+import WidgetFileSystemService from "../services/WidgetFileSystemService";
 
 export class WidgetLibraryManager {
   private libraryWindow: BrowserWindow | null = null;
+  private widgetFileSystemService: WidgetFileSystemService;
+
+  constructor(widgetFileSystemService: WidgetFileSystemService) {
+    this.widgetFileSystemService = widgetFileSystemService;
+  }
 
   public createLibraryWindow() {
     const displays = screen.getAllDisplays();
@@ -13,7 +18,7 @@ export class WidgetLibraryManager {
 
     this.libraryWindow = new BrowserWindow({
       width: 600,
-      height: 400,
+      height: 800,
       x,
       y,
       skipTaskbar: true,
@@ -27,36 +32,38 @@ export class WidgetLibraryManager {
         partition: "persist:session",
       },
     });
-    this.libraryWindow.setAlwaysOnTop(true, 'floating')
+    this.libraryWindow.setAlwaysOnTop(true, "floating");
     this.libraryWindow.on("closed", (): void => (this.libraryWindow = null));
     this.libraryWindow.loadFile(path.join(__dirname, "../views/library.html"));
     this.libraryWindow.webContents.once("did-finish-load", () => {
-      this.libraryWindow?.webContents.send("update-widgets", config.allWidgets);
+      this.libraryWindow?.webContents.send(
+        "update-widgets",
+        this.widgetFileSystemService.getWidgets(true)
+      );
     });
 
-    
     ipcMain.on("close-window", () => {
       this.libraryWindow?.close();
     });
-    
-    ipcMain.on(
-      "update-widget-data",
-      (_event, widget: Widget) => {
-        this.updateWidget(widget);
-      }
-    );
+
+    ipcMain.on("update-widget-data", (_event, widget: Widget) => {
+      this.updateWidget(widget);
+    });
   }
 
   public toggleLibraryWindow() {
     if (this.libraryWindow) {
-        this.libraryWindow.close();
+      this.libraryWindow.close();
     } else {
-        this.createLibraryWindow();
+      this.createLibraryWindow();
     }
   }
 
   private updateWidget(widget: Widget) {
-    config.saveWidget(widget);
-    this.libraryWindow?.webContents.send("update-widgets", config.allWidgets);
+    this.widgetFileSystemService.updateWidgetInMemory(widget);
+    this.libraryWindow?.webContents.send(
+      "update-widgets",
+      this.widgetFileSystemService.getWidgets(true)
+    );
   }
 }
