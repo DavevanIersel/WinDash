@@ -79,14 +79,14 @@ export class WidgetManager {
       injectCSS(view.webContents);
 
       if (widget.touchEnabled) {
-        // enableTouchEmulation(view.webContents);
+        enableTouchEmulation(view.webContents);
       }
     });
 
     this.windowManager.getMainWindow().contentView.addChildView(view);
 
     this.windowManager.getMainWindow().on("closed", () => {
-      view.webContents.close();
+      view.webContents?.close();
     });
 
     // Add a container below the WebContentsView for grid management (Drag and Drop)
@@ -208,7 +208,7 @@ export class WidgetManager {
       if (viewIndex !== -1) {
         const view = views.splice(viewIndex, 1)[0];
         this.windowManager.getMainWindow().contentView.removeChildView(view);
-        view.webContents.close();
+        view.webContents?.close();
       }
     }
     this.windowManager
