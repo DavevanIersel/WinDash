@@ -38,31 +38,20 @@ ipcRenderer.on("update-widgets", (_event, widgets) => {
     const action = document.createElement("td");
     action.classList.add("whitespace-nowrap"); // Prevent wrapping for action column
 
-    // Create the div with the tooltip
-    const tooltipDiv = document.createElement("div");
-    tooltipDiv.classList.add("tooltip", "tooltip-left");
-    tooltipDiv.setAttribute(
-      "data-tip",
-      widget.enabled ? "Disable Widget" : "Enable Widget"
-    );
+    //Toggle widget input
+    const toggleWidgetInput = document.createElement("input");
+    toggleWidgetInput.checked = widget.enabled;
+    toggleWidgetInput.type = 'checkbox';
+    toggleWidgetInput.classList.add("toggle", "toggle-success")
+    toggleWidgetInput.addEventListener("change", (event) => {
+      if (event.target.checked) {
+        onEnabled(widget);
+      } else {
+        onDisabled(widget);
+      }
+    });
 
-    const toggleWidgetButton = document.createElement("button");
-
-    const buttonIcon = document.createElement("i");
-    buttonIcon.classList = `las ${
-      widget.enabled
-        ? "la-minus-square text-error"
-        : "la-plus-square text-success"
-    }`;
-    buttonIcon.style.fontSize = "24px";
-    toggleWidgetButton.appendChild(buttonIcon);
-
-    toggleWidgetButton.addEventListener(
-      "click",
-      widget.enabled ? () => onDisabled(widget) : () => onEnabled(widget)
-    );
-    tooltipDiv.appendChild(toggleWidgetButton);
-    action.appendChild(tooltipDiv);
+    action.appendChild(toggleWidgetInput);
     widgetRow.appendChild(action);
 
     container.appendChild(widgetRow);
