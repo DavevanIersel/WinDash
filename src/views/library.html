@@ -15,25 +15,54 @@
     <title>Widget Library</title>
   </head>
   <body class="p-3">
-    <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">Widget Library</h1>
-    <label class="input input-bordered flex items-center gap-2 mb-2">
-      <input type="text" class="grow" placeholder="Search" />
-      <i class="las la-search"></i>
-    </label>
-    <div class="overflow-x-auto">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Enabled</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="widget-table-data">
-        </tbody>
-      </table>
+    <div id="app">
+      <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">Widget Library</h1>
+      <label class="input input-bordered flex items-center gap-2 mb-2">
+        <input
+          type="text"
+          v-model="searchQuery"
+          class="grow"
+          placeholder="Search"
+        />
+        <i class="las la-search"></i>
+      </label>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Enabled</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="widget in filteredWidgets"
+              :key="widget.id"
+            >
+              <td class="text-center whitespace-nowrap">
+                <div
+                  class="badge badge-sm"
+                  :class="widget.enabled ? 'badge-success' : 'badge-error'"
+                ></div>
+              </td>
+              <td class="whitespace-nowrap">{{ widget.name }}</td>
+              <td style="width: 90%;">{{ widget.description }}</td>
+              <td class="whitespace-nowrap">
+                <input
+                  type="checkbox"
+                  class="toggle toggle-success"
+                  v-model="widget.enabled"
+                  @change="updateWidget(widget)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.min.js"></script>
     <script src="./library.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
   </body>
