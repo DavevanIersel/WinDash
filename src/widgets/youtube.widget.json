@@ -1,0 +1,11 @@
+{
+  "$schema": "widget-schema.json",
+  "name": "Youtube",
+  "url": "https://www.youtube.com/",
+  "enabled": false,
+  "x": 2,
+  "y": 2,
+  "width": 15,
+  "height": 8,
+  "touchEnabled": false
+}

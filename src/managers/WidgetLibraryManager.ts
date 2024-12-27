@@ -27,7 +27,7 @@ export class WidgetLibraryManager {
         partition: "persist:session",
       },
     });
-    this.libraryWindow.setAlwaysOnTop(true)
+    this.libraryWindow.setAlwaysOnTop(true, 'floating')
     this.libraryWindow.on("closed", (): void => (this.libraryWindow = null));
     this.libraryWindow.loadFile(path.join(__dirname, "../views/library.html"));
     this.libraryWindow.webContents.once("did-finish-load", () => {

@@ -1,0 +1,13 @@
+{
+  "$schema": "widget-schema.json",
+  "name": "Discord",
+  "url": "https://discord.com/channels/@me",
+  "enabled": false,
+  "x": 18,
+  "y": 2,
+  "width": 19,
+  "height": 17,
+  "touchEnabled": false,
+  "devTools": false,
+  "id": "discord"
+}

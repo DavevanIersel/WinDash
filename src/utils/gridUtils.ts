@@ -1,7 +1,4 @@
-import { Config } from "../config";
-
-
-export const gridSize = 50;
+export const gridSize = 20;
 
 export function pixelsToGridCoordinates(pixelX: number, pixelY: number, pixelWidth: number, pixelHeight: number) {
     return {
