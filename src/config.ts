@@ -5,7 +5,14 @@ import {
   gridToPixelCoordinates,
   pixelsToGridCoordinates,
 } from "./utils/gridUtils";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "fs";
 import { join } from "path";
 
 const WIDGET_FILE_EXTENSION = ".widget.json";
@@ -25,7 +32,8 @@ interface Grid {
 }
 
 export interface Config {
-  widgets: Widget[];
+  enabledWidgets: Widget[];
+  allWidgets: Widget[];
   saveWidget: (widget: Widget) => void;
 }
 
@@ -60,7 +68,6 @@ const loadWidgetConfig = (filename: string): Widget | null => {
   }
 };
 
-
 const getWidgetFiles = (dir: string, baseDir: string = dir): string[] => {
   const entries = readdirSync(dir, { encoding: "utf-8" });
   const files: string[] = [];
@@ -78,16 +85,25 @@ const getWidgetFiles = (dir: string, baseDir: string = dir): string[] => {
   return files;
 };
 
-const loadWidgets = (): Widget[] => {
+const loadWidgets = (loadDisabled: boolean): Widget[] => {
   return getWidgetFiles(widgetsFolder)
     .map((file) => loadWidgetConfig(file))
-    .filter((config): config is Widget => config !== null && config.enabled);
+    .filter(
+      (config): config is Widget =>
+        loadDisabled || (config !== null && config.enabled)
+    );
 };
-
 
 const saveWidgetConfig = (widget: Widget) => {
   const filename = `${widget.id}${WIDGET_FILE_EXTENSION}`;
   const filePath = path.join(widgetsFolder, filename);
+
+  const widgetIndex = config.allWidgets.findIndex((w) => w.id === widget.id);
+  if (widgetIndex !== -1) {
+    config.allWidgets[widgetIndex] = widget;
+  } else {
+    config.allWidgets.push(widget);
+  }
 
   const gridCoordinates = pixelsToGridCoordinates(
     widget.x,
@@ -113,7 +129,8 @@ const saveWidgetConfig = (widget: Widget) => {
 };
 
 const config: Config = {
-  widgets: loadWidgets(),
+  enabledWidgets: loadWidgets(false),
+  allWidgets: loadWidgets(true),
   saveWidget: saveWidgetConfig,
 };
 

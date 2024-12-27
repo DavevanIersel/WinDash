@@ -1,5 +1,6 @@
 {
   "$schema": "widget-schema.json",
+  "name": "Whatsapp",
   "url": "https://web.whatsapp.com/",
   "enabled": true,
   "x": 2,

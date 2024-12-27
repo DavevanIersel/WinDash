@@ -6,7 +6,7 @@ import { join } from "path";
 import { readFileSync } from "fs";
 import { Position } from "../models/Position";
 
-const widgetWebContentsMap = new Map<number, Widget>();
+const viewIdToWidgetMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
 
 const cssPath = join(__dirname, "../styles/widget-styles.css");
@@ -20,22 +20,10 @@ export class WidgetManager {
   }
 
   public initializeWidgets() {
-    config.widgets.forEach((widget: Widget) => {
+    config.enabledWidgets.forEach((widget: Widget) => {
       this.createWidget(widget);
     });
-
-    const widgetPositions = new Map<number, Position>();
-    widgetWebContentsMap.forEach((widget, id) => {
-      widgetPositions.set(id, {
-        x: widget.x,
-        y: widget.y,
-        width: widget.width,
-        height: widget.height,
-      });
-    });
-
-    this.sendWidgetPositions(widgetPositions);
-
+    this.sendWidgetPositions();
     overwriteUserAgents();
 
     ipcMain.on(
@@ -44,13 +32,25 @@ export class WidgetManager {
         this.updateWidgetPositions(widgetPositions, save);
       }
     );
+
+    ipcMain.on("update-widget-data", (_event, widget: Widget) => {
+      const viewId = this.getViewIDByWidgetID(widget.id);
+
+      if (viewId && viewIdToWidgetMap.get(viewId)) {
+        this.removeWidget(viewId);
+      }
+      if (widget.enabled) {
+        this.createWidget(widget);
+      }
+      this.sendWidgetPositions();
+    });
   }
 
   private createWidget(widget: Widget) {
     const view = new WebContentsView();
 
     if (widget.html) {
-      const localFilePath = join(__dirname, "../widgets",widget.html);
+      const localFilePath = join(__dirname, "../widgets", widget.html);
       view.webContents.loadFile(localFilePath);
     } else if (widget.url) {
       view.webContents.loadURL(widget.url);
@@ -59,7 +59,7 @@ export class WidgetManager {
       return;
     }
 
-    widgetWebContentsMap.set(view.webContents.id, widget);
+    viewIdToWidgetMap.set(view.webContents.id, widget);
     view.setBounds({
       x: widget.x,
       y: widget.y,
@@ -79,7 +79,7 @@ export class WidgetManager {
       injectCSS(view.webContents);
 
       if (widget.touchEnabled) {
-        enableTouchEmulation(view.webContents);
+        // enableTouchEmulation(view.webContents);
       }
     });
 
@@ -107,22 +107,28 @@ export class WidgetManager {
     width: number,
     height: number
   ) {
-    this.windowManager.getMainWindow().webContents.on("did-finish-load", () => {
-      this.windowManager
-        .getMainWindow()
-        .webContents.send("create-draggable-widget", id, x, y, width, height);
+   
+  const mainWindow = this.windowManager.getMainWindow();
+  const webContents = mainWindow.webContents;
+
+  if (webContents.isLoading()) {
+    webContents.on("did-finish-load", () => {
+      webContents.send("create-draggable-widget", id, x, y, width, height);
     });
+  } else {
+    webContents.send("create-draggable-widget", id, x, y, width, height);
+  }
   }
 
   private updateWidgetPositions(
     widgetPositions: Map<number, Position>,
     save: boolean
   ) {
-    this.sendWidgetPositions(widgetPositions);
+    this.sendWidgetPositions();
     widgetPositions.forEach((position, id) => {
-      const widget = widgetWebContentsMap.get(id);
+      const widget = viewIdToWidgetMap.get(id);
       if (widget) {
-        widgetWebContentsMap.set(id, {
+        viewIdToWidgetMap.set(id, {
           ...widget,
           x: position.x,
           y: position.y,
@@ -145,13 +151,48 @@ export class WidgetManager {
   }
 
   //Update positions for click pass through calculations (preload.ts)
-  private sendWidgetPositions(widgetPositions: Map<number, Position>) {
+  private sendWidgetPositions() {
+    const widgetPositions = new Map<number, Position>();
+    viewIdToWidgetMap.forEach((widget, id) => {
+      widgetPositions.set(id, {
+        x: widget.x,
+        y: widget.y,
+        width: widget.width,
+        height: widget.height,
+      });
+    });
+
     const mainWindow = this.windowManager.getMainWindow();
     if (mainWindow && mainWindow.webContents) {
       mainWindow.webContents.send(
         "widget-location-update-for-preload",
         widgetPositions
       );
+    }
+  }
+
+  private getViewIDByWidgetID(widgetId: string): number | null {
+    for (const [viewId, widget] of viewIdToWidgetMap.entries()) {
+      if (widget.id === widgetId) {
+        return viewId;
+      }
+    }
+    return null;
+  }
+
+  private removeWidget(widgetId: number) {
+    const widget = viewIdToWidgetMap.get(widgetId);
+    if (widget) {
+      viewIdToWidgetMap.delete(widgetId);
+
+      const viewIndex = views.findIndex(
+        (view) => view.webContents.id === widgetId
+      );
+      if (viewIndex !== -1) {
+        const view = views.splice(viewIndex, 1)[0];
+        this.windowManager.getMainWindow().contentView.removeChildView(view);
+        view.webContents.close();
+      }
     }
   }
 }
@@ -180,7 +221,7 @@ const overwriteUserAgents = () => {
     const originalUserAgent = session.defaultSession.getUserAgent();
     let userAgent = originalUserAgent;
 
-    const widget = widgetWebContentsMap.get(details.webContentsId);
+    const widget = viewIdToWidgetMap.get(details.webContentsId);
 
     if (widget && widget.customUserAgent) {
       for (const [domain, customAgent] of Object.entries(

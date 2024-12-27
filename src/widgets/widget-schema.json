@@ -6,6 +6,10 @@
         "type": "string",
         "description": "Generated from filename"
       },
+      "name": {
+        "type": "string",
+        "description": "A name for the widget"
+      },
       "html": {
         "type": "string",
         "description": "The HTML page that should be loaded for a custom widget"
@@ -70,6 +74,7 @@
       }
     ],
     "required": [
+      "name",
       "x",
       "y",
       "width",

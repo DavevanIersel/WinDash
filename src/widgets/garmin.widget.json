@@ -1,5 +1,6 @@
 {
   "$schema": "widget-schema.json",
+  "name": "Garmin Dashboard",
   "url": "https://connect.garmin.com/modern/home",
   "enabled": true,
   "x": 18,

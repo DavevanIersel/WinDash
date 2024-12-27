@@ -76,6 +76,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   );
 
+  ipcRenderer.on("update-widget-data", (_event, widget) => {
+    if (!widget.enabled) {
+      
+    }
+  })
+
   function createDraggableWidget(
     id: number,
     position: { x: number; y: number; width: number; height: number }

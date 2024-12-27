@@ -1,5 +1,6 @@
 {
   "$schema": "../widget-schema.json",
+  "name": "New widget",
   "html": "./calculator/calculator.widget.html",
   "enabled": true,
   "x": 2,

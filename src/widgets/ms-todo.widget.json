@@ -1,5 +1,6 @@
 {
   "$schema": "widget-schema.json",
+  "name": "Microsoft Todo",
   "url": "https://to-do.live.com/tasks/AQMkADAwATM3ZmYAZS1jYTEzLTY1YjktMDACLTAwCgAuAAADyqr38IduTEGsZZ2vTL9i7QEAwnT1PlmmVkCwuln8igKb4AAHX-siuQAAAA==",
   "enabled": true,
   "x": 2,

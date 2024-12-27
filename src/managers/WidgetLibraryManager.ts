@@ -1,5 +1,7 @@
 import { BrowserWindow, ipcMain, screen } from "electron";
 import * as path from "path";
+import config from "../config";
+import { Widget } from "../models/Widget";
 
 export class WidgetLibraryManager {
   private libraryWindow: BrowserWindow | null = null;
@@ -28,10 +30,21 @@ export class WidgetLibraryManager {
     this.libraryWindow.setAlwaysOnTop(true)
     this.libraryWindow.on("closed", (): void => (this.libraryWindow = null));
     this.libraryWindow.loadFile(path.join(__dirname, "../views/library.html"));
+    this.libraryWindow.webContents.once("did-finish-load", () => {
+      this.libraryWindow?.webContents.send("update-widgets", config.allWidgets);
+    });
 
+    
     ipcMain.on("close-window", () => {
       this.libraryWindow?.close();
     });
+    
+    ipcMain.on(
+      "update-widget-data",
+      (_event, widget: Widget) => {
+        this.updateWidget(widget);
+      }
+    );
   }
 
   public toggleLibraryWindow() {
@@ -40,5 +53,10 @@ export class WidgetLibraryManager {
     } else {
         this.createLibraryWindow();
     }
+  }
+
+  private updateWidget(widget: Widget) {
+    config.saveWidget(widget);
+    this.libraryWindow?.webContents.send("update-widgets", config.allWidgets);
   }
 }

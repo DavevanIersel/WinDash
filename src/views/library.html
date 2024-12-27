@@ -3,9 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Library</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.22/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css"
+    />
+    <title>Widget Library</title>
   </head>
-  <body>
-    Library
+  <body class="p-3">
+    <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">Widget Library</h1>
+    <label class="input input-bordered flex items-center gap-2 mb-2">
+      <input type="text" class="grow" placeholder="Search" />
+      <i class="las la-search"></i>
+    </label>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Enabled</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="widget-table-data">
+        </tbody>
+      </table>
+    </div>
+    <script src="./library.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 {
   "$schema": "widget-schema.json",
+  "name": "ChatGPT",
   "url": "https://chatgpt.com/",
   "enabled": false,
   "x": 2,
