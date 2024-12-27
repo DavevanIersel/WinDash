@@ -78,9 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   ipcRenderer.on("update-widget-data", (_event, widget) => {
     if (!widget.enabled) {
-      
     }
-  })
+  });
 
   function createDraggableWidget(
     id: number,
@@ -88,16 +87,17 @@ document.addEventListener("DOMContentLoaded", () => {
   ) {
     widgetPositions.set(id, position);
 
-    const widgetRect = new Konva.Rect({
+    const widgetGroup = new Konva.Group({
       x: snapToGrid(position.x),
       y: snapToGrid(position.y),
-      width: position.width,
-      height: position.height,
+      draggable: true,
     });
+    widgetGroup.width(position.width);
+    widgetGroup.height(position.height);
 
     const resizeHandle = new Konva.Circle({
-      x: snapToGrid(position.x) + position.width,
-      y: snapToGrid(position.y) + position.height,
+      x: 0 + position.width,
+      y: 0 + position.height,
       radius: 8,
       fill: "transparent",
       stroke: "gray",
@@ -110,8 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const moveHandle = new Konva.Rect({
-      x: snapToGrid(position.x) + position.width,
-      y: snapToGrid(position.y) - moveHandleSize,
+      x: 0 + position.width,
+      y: 0 - moveHandleSize,
       width: moveHandleSize,
       height: moveHandleSize,
       fill: "transparent",
@@ -126,16 +126,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Drag and drop
     moveHandle.on("dragmove", () => {
-      const newX = snapToGrid(moveHandle.x() - widgetRect.width());
-      const newY = snapToGrid(moveHandle.y() + moveHandleSize);
-      widgetRect.position({ x: newX, y: newY });
-      resizeHandle.position({
-        x: newX + widgetRect.width(),
-        y: newY + widgetRect.height(),
-      });
+      const newX = snapToGrid(
+        widgetGroup.x() + moveHandle.x() - widgetGroup.width()
+      );
+      const newY = snapToGrid(
+        widgetGroup.y() + moveHandle.y() + moveHandleSize
+      );
+      widgetGroup.position({ x: newX, y: newY });
+
       moveHandle.position({
-        x: newX + widgetRect.width(),
-        y: newY - moveHandleSize,
+        x: widgetGroup.width(),
+        y: - moveHandleSize,
       });
 
       updateWidgetPosition(id, { x: newX, y: newY });
@@ -144,34 +145,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Resize
     resizeHandle.on("dragmove", () => {
-      const newWidth = Math.max(
-        snapToGrid(resizeHandle.x() - widgetRect.x()),
-        gridSize
-      );
-      const newHeight = Math.max(
-        snapToGrid(resizeHandle.y() - widgetRect.y()),
-        gridSize
-      );
-      widgetRect.width(newWidth);
-      widgetRect.height(newHeight);
+      const newWidth = Math.max(snapToGrid(resizeHandle.x()), gridSize);
+      const newHeight = Math.max(snapToGrid(resizeHandle.y()), gridSize);
+      widgetGroup.width(newWidth);
+      widgetGroup.height(newHeight);
 
       resizeHandle.position({
-        x: widgetRect.x() + newWidth,
-        y: widgetRect.y() + newHeight,
+        x: newWidth,
+        y: newHeight,
       });
 
       moveHandle.position({
-        x: widgetRect.x() + newWidth,
-        y: widgetRect.y() - moveHandleSize,
+        x: newWidth,
+        y: -moveHandleSize,
       });
 
       updateWidgetPosition(id, { width: newWidth, height: newHeight });
       layer.draw();
     });
 
-    layer.add(widgetRect);
-    layer.add(resizeHandle);
-    layer.add(moveHandle);
+    widgetGroup.add(resizeHandle);
+    widgetGroup.add(moveHandle);
+    layer.add(widgetGroup);
     layer.draw();
   }
 
