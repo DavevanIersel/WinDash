@@ -1,0 +1,13 @@
+{
+  "$schema": "widget-schema.json",
+  "name": "MyAnimeList Profile",
+  "url": "https://myanimelist.net/animelist/Dn_Dave?status=7",
+  "enabled": true,
+  "x": 2,
+  "y": 11,
+  "width": 15,
+  "height": 8,
+  "customUserAgent": {
+    "open.spotify.com": "Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0"
+  }
+}
