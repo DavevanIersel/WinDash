@@ -93,21 +93,28 @@ export class WidgetManager {
     this.windowManager.getMainWindow().on("closed", () => {
       view.webContents?.close();
     });
-    
-    session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-      dialog.showMessageBox(this.windowManager.getMainWindow(), {
-        type: 'question',
-        buttons: ['Allow', 'Deny'],
-        defaultId: 0,
-        title: 'Permission Request',
-        message: `${viewIdToWidgetMap.get(webContents.id)?.name ?? 'An unknown widget'} wants to use the "${permission}" permission. Do you allow it?`
-      }).then(result => {
-        callback(result.response === 0);
-      }).catch(err => {
-        console.error(err);
-        callback(false);
-      });
-    });
+
+    session.defaultSession.setPermissionRequestHandler(
+      (webContents, permission, callback) => {
+        dialog
+          .showMessageBox(this.windowManager.getMainWindow(), {
+            type: "question",
+            buttons: ["Allow", "Deny"],
+            defaultId: 0,
+            title: "Permission Request",
+            message: `${
+              viewIdToWidgetMap.get(webContents.id)?.name ?? "An unknown widget"
+            } wants to use the "${permission}" permission. Do you allow it?`,
+          })
+          .then((result) => {
+            callback(result.response === 0);
+          })
+          .catch((err) => {
+            console.error(err);
+            callback(false);
+          });
+      }
+    );
 
     // Add a container below the WebContentsView for grid management (Drag and Drop)
     this.createDraggableWidgetFromMain(
@@ -219,18 +226,20 @@ export class WidgetManager {
 
   private removeWidget(widgetId: number) {
     const widget = viewIdToWidgetMap.get(widgetId);
-    if (widget) {
-      viewIdToWidgetMap.delete(widgetId);
+    if (!widget) return;
 
-      const viewIndex = views.findIndex(
-        (view) => view.webContents.id === widgetId
-      );
-      if (viewIndex !== -1) {
-        const view = views.splice(viewIndex, 1)[0];
-        this.windowManager.getMainWindow().contentView.removeChildView(view);
-        view.webContents?.close();
-      }
+    viewIdToWidgetMap.delete(widgetId);
+    const viewIndex = views.findIndex(
+      (view) => view.webContents.id === widgetId
+    );
+
+    if (viewIndex !== -1) {
+      const view = views.splice(viewIndex, 1)[0];
+      this.windowManager.getMainWindow().contentView.removeChildView(view);
+      view.webContents?.close();
     }
+    widget.enabled = false;
+    this.widgetFileSystemService.saveWidgetConfig(widget);
     this.windowManager
       .getMainWindow()
       .webContents.send("remove-draggable-widget", widget);
