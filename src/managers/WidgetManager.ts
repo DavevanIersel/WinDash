@@ -286,10 +286,8 @@ const overwriteUserAgents = () => {
 
     const widget = viewIdToWidgetMap.get(details.webContentsId);
 
-    if (widget && widget.customUserAgent) {
-      for (const [domain, customAgent] of Object.entries(
-        widget.customUserAgent
-      )) {
+    if (widget && Array.isArray(widget.customUserAgent)) {
+      for (const { domain, userAgent: customAgent } of widget.customUserAgent) {
         if (url.hostname.includes(domain)) {
           userAgent = customAgent;
           break;

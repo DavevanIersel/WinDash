@@ -10,7 +10,10 @@
   "touchEnabled": true,
   "devTools": false,
   "__comment": "Get through cloudflare by setting a different user agent on the webpage itself, not cloudflare",
-  "customUserAgent": {
-    "garmin": "Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0"
-  }
+  "customUserAgent": [
+    {
+      "domain": "garmin",
+      "userAgent": "Mozilla/5.0 (Android 15; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0"
+    }
+  ]
 }

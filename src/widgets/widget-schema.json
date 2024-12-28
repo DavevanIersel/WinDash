@@ -42,13 +42,24 @@
         "type": "boolean",
         "description": "Toggle widget on or off"
       },
+    
       "customUserAgent": {
-        "type": "object",
-        "additionalProperties": {
-          "type": "string",
-          "description": "A custom user agent for a specific domain"
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "description": "The domain to which this custom user agent applies"
+            },
+            "userAgent": {
+              "type": "string",
+              "description": "The custom user agent string for the specified domain"
+            }
+          },
+          "required": ["domain", "userAgent"]
         },
-        "description": "Mapping of domains to custom user agents"
+        "description": "A list of custom user agents for specific domains"
       },
       "permissions": {
         "type": "object",
