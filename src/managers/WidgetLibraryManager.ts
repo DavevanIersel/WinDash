@@ -45,21 +45,21 @@ export class WidgetLibraryManager {
       this.updateWidget(widget);
     });
 
-    ipcMain.on("toggle-edit-widget-view", (_event, enable: boolean, widget?: Widget) => {
-      if (enable) {
-        this.libraryWindow.loadFile(
-          path.join(__dirname, "../views/edit-widget.html")
-        );
-        this.libraryWindow.webContents.once("did-finish-load", () => {
-          this.libraryWindow?.webContents.send(
-            "load-widget",
-            widget
+    ipcMain.on(
+      "toggle-edit-widget-view",
+      (_event, enable: boolean, widget?: Widget) => {
+        if (enable) {
+          this.libraryWindow.loadFile(
+            path.join(__dirname, "../views/edit-widget.html")
           );
-        });        
-      } else {
-        this.loadLibrary();
+          this.libraryWindow.webContents.once("did-finish-load", () => {
+            this.libraryWindow?.webContents.send("load-widget", widget);
+          });
+        } else {
+          this.loadLibrary();
+        }
       }
-    });
+    );
   }
 
   public loadLibrary() {
@@ -89,12 +89,12 @@ export class WidgetLibraryManager {
   }
 
   private addCreateOrEditWidgetListener() {
-    ipcMain.on("create-or-edit-widget", (_event, widget: Widget | null) => {
-      if (widget) {
-        this.widgetFileSystemService.saveWidgetConfig(widget);
-      } else {
-        this.widgetFileSystemService.createNewWidget();
+    ipcMain.on("create-or-edit-widget", (_event, widget: Widget) => {
+      if (widget.fileName === undefined) { //New widget
+        widget.fileName =
+          this.widgetFileSystemService.toSafeWidgetName(widget.name);
       }
+      this.widgetFileSystemService.saveWidgetConfig(widget);
       this.libraryWindow?.webContents.send(
         "update-widgets",
         this.widgetFileSystemService.getWidgets(true)

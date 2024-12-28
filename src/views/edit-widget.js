@@ -87,7 +87,8 @@ new Vue({
       } else {
         this.editingWidget.url = undefined;
       }
-      this.cancelEditing(); // Clear form and reset state after saving
+      ipcRenderer.send("update-preview", this.editingWidget);
+      this.cancelEditing(); 
     },
     cancelEditing() {
       this.editingWidget = null;
@@ -107,10 +108,10 @@ new Vue({
           name: "",
           url: '',
           html: '',
-          x: 2,
-          y: 2,
-          width: 10,
-          height: 10,
+          x: 40,
+          y: 40,
+          width: 600,
+          height: 400,
           enabled: undefined,
           touchEnabled: undefined,
           customUserAgent: [],

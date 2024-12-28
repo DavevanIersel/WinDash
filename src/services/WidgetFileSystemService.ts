@@ -12,7 +12,7 @@ import {
   statSync,
   writeFileSync,
 } from "fs";
-import { join, relative } from "path";
+import { dirname, join, relative } from "path";
 import { v4 as uuidv4 } from "uuid";
 
 const WIDGET_FILE_EXTENSION = ".widget.json";
@@ -97,27 +97,51 @@ class WidgetFileSystemService {
     return this.widgets.filter((widget) => includeDisabled || widget.enabled);
   }
 
-  public createNewWidget() {
+  public toSafeWidgetName(name: string): string {
+    let safeName = name
+      .replace(/\s+/g, '-')
+      .replace(/[<>:"/\\|?*]/g, '');
+  
+    safeName = safeName.substring(0, 30);
+  
+    let newName = `${safeName}/${safeName}.widget.json`;
+    let fullPath = join(widgetsFolder, newName);
+  
+    let counter = 1;
+    while (existsSync(fullPath)) {
+      newName = `${safeName} (${counter})/${safeName} (${counter}).widget.json`;
+      newName = newName.substring(0, 40);
+      fullPath = join(widgetsFolder, newName);
+      counter++;
+    }
+  
+    return newName;
   }
 
   public saveWidgetConfig(widget: Widget) {
     const filePath = join(widgetsFolder, widget.fileName);
     this.updateWidgetInMemory(widget);
-
+  
     const gridCoordinates = pixelsToGridCoordinates(
       widget.x,
       widget.y,
       widget.width,
       widget.height
     );
-
+  
     const widgetToSave = {
       ...widget,
       ...gridCoordinates,
     };
-
+  
     try {
+      const dirPath = join(widgetsFolder, dirname(widget.fileName));
+      if (!existsSync(dirPath)) {
+        mkdirSync(dirPath, { recursive: true }); 
+      }
+  
       const jsonContent = JSON.stringify(widgetToSave, null, 2);
+  
       writeFileSync(filePath, jsonContent, FILE_ENCODING);
     } catch (e) {
       console.error(`Error saving widget to file ${widget.fileName}:`, e);
