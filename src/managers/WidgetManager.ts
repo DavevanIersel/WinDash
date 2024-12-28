@@ -5,6 +5,8 @@ import { join } from "path";
 import { readFileSync } from "fs";
 import { Position } from "../models/Position";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
+import { getExplicitPermissions } from "../utils/permissionUtils";
+import { Permission } from "../models/Permission";
 
 const viewIdToWidgetMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
@@ -96,15 +98,27 @@ export class WidgetManager {
 
     session.defaultSession.setPermissionRequestHandler(
       (webContents, permission, callback) => {
+        const currentWidget = viewIdToWidgetMap.get(webContents.id);
+        if (!widget) {
+          callback(false);
+          return;
+        }
+        const explicitPermission = getExplicitPermissions(
+          currentWidget.permissions
+        ).get(permission as Permission);
+        
+        if (explicitPermission !== undefined) {
+          callback(explicitPermission);
+          return;
+        }
+
         dialog
           .showMessageBox(this.windowManager.getMainWindow(), {
             type: "question",
             buttons: ["Allow", "Deny"],
             defaultId: 0,
             title: "Permission Request",
-            message: `${
-              viewIdToWidgetMap.get(webContents.id)?.name ?? "An unknown widget"
-            } wants to use the "${permission}" permission. Do you allow it?`,
+            message: `${currentWidget.name} wants to use the "${permission}" permission. Do you allow it?`,
           })
           .then((result) => {
             callback(result.response === 0);

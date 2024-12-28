@@ -1,0 +1,23 @@
+// Based on the parameter type for the callback function from session.defaultSession.setPermissionRequestHandler()
+export enum Permission {
+  ClipboardRead = "clipboard-read",
+  ClipboardSanitizedWrite = "clipboard-sanitized-write",
+  DisplayCapture = "display-capture",
+  Fullscreen = "fullscreen",
+  Geolocation = "geolocation",
+  IdleDetection = "idle-detection",
+  Media = "media",
+  MediaKeySystem = "mediaKeySystem",
+  Midi = "midi",
+  MidiSysex = "midiSysex",
+  Notifications = "notifications",
+  PointerLock = "pointerLock",
+  KeyboardLock = "keyboardLock",
+  OpenExternal = "openExternal",
+  SpeakerSelection = "speaker-selection",
+  StorageAccess = "storage-access",
+  TopLevelStorageAccess = "top-level-storage-access",
+  WindowManagement = "window-management",
+  Unknown = "unknown",
+  FileSystem = "fileSystem",
+}

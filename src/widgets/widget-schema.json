@@ -50,6 +50,14 @@
         },
         "description": "Mapping of domains to custom user agents"
       },
+      "permissions": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "boolean",
+          "description": "Indicates whether a specific permission is granted"
+        },
+        "description": "Mapping of permission types (strings) to booleans"
+      },
       "customScript": {
         "type": "string",
         "description": "A custom JS script you want to be loaded on the widget webpage"

@@ -80,6 +80,7 @@ class WidgetFileSystemService {
         widget.width,
         widget.height
       );
+      
       return {
         ...widget,
         id: uuidv4(),
