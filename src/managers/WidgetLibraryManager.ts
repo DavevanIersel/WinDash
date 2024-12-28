@@ -2,14 +2,19 @@ import { BrowserWindow, ipcMain, screen } from "electron";
 import * as path from "path";
 import { Widget } from "../models/Widget";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
-import { v4 as uuidv4 } from "uuid";
+import { WidgetManager } from "./WidgetManager";
 
 export class WidgetLibraryManager {
   private libraryWindow: BrowserWindow | null = null;
   private widgetFileSystemService: WidgetFileSystemService;
+  private widgetManager: WidgetManager;
 
-  constructor(widgetFileSystemService: WidgetFileSystemService) {
+  constructor(
+    widgetFileSystemService: WidgetFileSystemService,
+    widgetManager: WidgetManager
+  ) {
     this.widgetFileSystemService = widgetFileSystemService;
+    this.widgetManager = widgetManager;
     this.addCreateOrEditWidgetListener();
   }
 
@@ -65,11 +70,15 @@ export class WidgetLibraryManager {
   public loadLibrary() {
     this.libraryWindow.loadFile(path.join(__dirname, "../views/library.html"));
     this.libraryWindow.webContents.once("did-finish-load", () => {
-      this.libraryWindow?.webContents.send(
-        "update-widgets",
-        this.widgetFileSystemService.getWidgets(true)
-      );
+      this.updateWidgets();
     });
+  }
+
+  public updateWidgets() {
+    this.libraryWindow?.webContents.send(
+      "update-widgets",
+      this.widgetFileSystemService.getWidgets(true)
+    );
   }
 
   public toggleLibraryWindow() {
@@ -90,15 +99,21 @@ export class WidgetLibraryManager {
 
   private addCreateOrEditWidgetListener() {
     ipcMain.on("create-or-edit-widget", (_event, widget: Widget) => {
-      if (widget.fileName === undefined) { //New widget
-        widget.fileName =
-          this.widgetFileSystemService.toSafeWidgetName(widget.name);
+      if (widget.fileName === undefined) {
+        //New widget
+        widget.fileName = this.widgetFileSystemService.toSafeWidgetName(
+          widget.name
+        );
       }
       this.widgetFileSystemService.saveWidgetConfig(widget);
       this.libraryWindow?.webContents.send(
         "update-widgets",
         this.widgetFileSystemService.getWidgets(true)
       );
+
+      if (widget.enabled) {
+        this.widgetManager.rerenderWidget(widget);
+      }
     });
   }
 }

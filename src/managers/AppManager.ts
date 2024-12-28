@@ -17,8 +17,8 @@ export class AppManager {
     this.windowManager = new WindowManager();
     this.trayManager = new TrayManager();
     this.widgetFileSystemService = new WidgetFileSystemService();
-    this.widgetManager = new WidgetManager(this.windowManager, this.widgetFileSystemService);
-    this.widgetLibraryManager = new WidgetLibraryManager(this.widgetFileSystemService);
+    this.widgetManager = new WidgetManager(this.windowManager, this.widgetFileSystemService, this);
+    this.widgetLibraryManager = new WidgetLibraryManager(this.widgetFileSystemService, this.widgetManager);
     this.widgetFileSystemService = new WidgetFileSystemService();
   }
 
@@ -37,6 +37,10 @@ export class AppManager {
     ipcMain.on("toggle-library", () => {
       this.widgetLibraryManager.toggleLibraryWindow();
     });
+  }
+
+  public updateLibraryWidgets() {
+    this.widgetLibraryManager.updateWidgets();
   }
 
   private onAllWindowsClosed() {

@@ -7,6 +7,7 @@ import { Position } from "../models/Position";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
 import { getExplicitPermissions } from "../utils/permissionUtils";
 import { Permission } from "../models/Permission";
+import { AppManager } from "./AppManager";
 
 const viewIdToWidgetMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
@@ -17,13 +18,16 @@ const cssContent = readFileSync(cssPath, "utf-8");
 export class WidgetManager {
   private windowManager: WindowManager;
   private widgetFileSystemService: WidgetFileSystemService;
+  private appManager: AppManager;
 
   constructor(
     windowManager: WindowManager,
-    widgetFileSystemService: WidgetFileSystemService
+    widgetFileSystemService: WidgetFileSystemService,
+    appManager: AppManager
   ) {
     this.windowManager = windowManager;
     this.widgetFileSystemService = widgetFileSystemService;
+    this.appManager = appManager;
   }
 
   public initializeWidgets() {
@@ -106,7 +110,7 @@ export class WidgetManager {
         const explicitPermission = getExplicitPermissions(
           currentWidget.permissions
         ).get(permission as Permission);
-        
+
         if (explicitPermission !== undefined) {
           callback(explicitPermission);
           return;
@@ -195,8 +199,12 @@ export class WidgetManager {
         });
 
         const view = views.find((view) => view.webContents.id === id);
+        console.log(widget);
         if (save) {
           this.widgetFileSystemService.saveWidgetConfig(widget);
+        } else {
+          this.widgetFileSystemService.updateWidgetInMemory(widget);
+          this.appManager.updateLibraryWidgets();
         }
         view?.setBounds({
           x: position.x,
@@ -238,14 +246,33 @@ export class WidgetManager {
     return null;
   }
 
-  private removeWidget(widgetId: number) {
-    const widget = viewIdToWidgetMap.get(widgetId);
+  public rerenderWidget(widget: Widget) {
+    const viewId = this.getViewIDByWidgetID(widget.id);
+    if (viewId) {
+      viewIdToWidgetMap.delete(viewId);
+    }
+    const viewIndex = views.findIndex((view) => view.webContents.id === viewId);
+
+    if (viewIndex !== -1) {
+      const view = views.splice(viewIndex, 1)[0];
+      this.windowManager.getMainWindow().contentView.removeChildView(view);
+      view.webContents?.close();
+    }
+
+    this.windowManager
+      .getMainWindow()
+      .webContents.send("remove-draggable-widget", widget);
+
+    this.createWidget(widget);
+    this.sendWidgetPositions();
+  }
+
+  public removeWidget(viewId: number) {
+    const widget = viewIdToWidgetMap.get(viewId);
     if (!widget) return;
 
-    viewIdToWidgetMap.delete(widgetId);
-    const viewIndex = views.findIndex(
-      (view) => view.webContents.id === widgetId
-    );
+    viewIdToWidgetMap.delete(viewId);
+    const viewIndex = views.findIndex((view) => view.webContents.id === viewId);
 
     if (viewIndex !== -1) {
       const view = views.splice(viewIndex, 1)[0];

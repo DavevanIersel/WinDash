@@ -86,6 +86,8 @@ new Vue({
       if ((this.editingWidget.url === "")) {
         this.editingWidget.url = undefined;
       }
+      this.editingWidget.width = Number(this.editingWidget.width);
+      this.editingWidget.height = Number(this.editingWidget.height);
       ipcRenderer.send("create-or-edit-widget", this.editingWidget);
       ipcRenderer.send("update-preview", this.editingWidget);
       this.cancelEditing();
