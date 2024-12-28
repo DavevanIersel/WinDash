@@ -16,7 +16,14 @@
   </head>
   <body class="p-3">
     <div id="app">
-      <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">Widget Library</h1>
+      <div class="flex justify-between">
+        <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">
+          Widget Library
+        </h1>
+        <button @click="createWidgetView()" class="btn btn-success">
+          New Widget<i class="las la-plus-circle"></i>
+        </button>
+      </div>
       <label class="input input-bordered flex items-center gap-2 mb-2">
         <input
           type="text"
@@ -37,10 +44,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="widget in filteredWidgets"
-              :key="widget.id"
-            >
+            <tr v-for="widget in filteredWidgets" :key="widget.id">
               <td class="text-center whitespace-nowrap">
                 <div
                   class="badge badge-sm"
@@ -48,7 +52,7 @@
                 ></div>
               </td>
               <td class="whitespace-nowrap">{{ widget.name }}</td>
-              <td style="width: 90%;">{{ widget.description }}</td>
+              <td style="width: 90%">{{ widget.description }}</td>
               <td class="whitespace-nowrap">
                 <input
                   type="checkbox"

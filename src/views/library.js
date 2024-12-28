@@ -20,6 +20,9 @@ new Vue({
     updateWidget(widget) {
       ipcRenderer.send("update-widget-data", widget);
     },
+    createWidgetView() {
+      ipcRenderer.send("toggle-edit-widget-view", true);
+    },
   },
   mounted() {
     ipcRenderer.on("update-widgets", (_event, widgets) => {

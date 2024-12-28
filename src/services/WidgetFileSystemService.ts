@@ -97,6 +97,9 @@ class WidgetFileSystemService {
     return this.widgets.filter((widget) => includeDisabled || widget.enabled);
   }
 
+  public createNewWidget() {
+  }
+
   public saveWidgetConfig(widget: Widget) {
     const filePath = join(widgetsFolder, widget.fileName);
     this.updateWidgetInMemory(widget);

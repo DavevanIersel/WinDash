@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.22/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css"
+    />
+    <title>Widget Library</title>
+  </head>
+  <body class="p-3">
+    <div id="app" class="flex h-full">
+      <!-- Left Side: Widget Preview -->
+      <div class="flex-grow-0 flex-shrink-0 w-3/5 border-r p-4">
+        <h2 class="text-xl font-bold">Widget Preview</h2>
+        <div v-if="editingWidget" class="border p-4 mt-4">
+          <h3>{{ editingWidget.name }}</h3>
+          <p>{{ editingWidget.description }}</p>
+          <div v-html="editingWidget.html"></div>
+        </div>
+        <p v-else>No widget selected for preview.</p>
+      </div>
+
+      <!-- Right Side: Form to Create/Edit Widget -->
+      <div class="w-2/5 p-4">
+        <h2 class="text-xl font-bold mb-4">
+          {{ creatingNewWidget ? 'Create Widget' : 'Edit Widget' }}
+        </h2>
+        <form @submit.prevent="saveWidget" v-if="editingWidget">
+          <label class="label">
+            <span class="label-text">Name</span>
+            <input
+              type="text"
+              v-model="editingWidget.name"
+              class="input input-bordered"
+              required
+            />
+          </label>
+
+          <label class="label">
+            <span class="label-text">URL</span>
+            <input
+              type="text"
+              v-model="editingWidget.url"
+              class="input input-bordered"
+              :disabled="isHtmlFilled()"
+            />
+          </label>
+
+          <label class="label">
+            <span class="label-text">HTML</span>
+            <input
+              type="text"
+              v-model="editingWidget.html"
+              class="input input-bordered"
+              :disabled="isUrlFilled()"
+            />
+          </label>
+
+          <div class="flex gap-4 mt-4">
+            <div class="flex flex-col w-1/2">
+              <label class="label">
+                <span class="label-text">Width</span>
+              </label>
+              <input
+                type="number"
+                v-model="editingWidget.width"
+                class="input input-bordered"
+              />
+            </div>
+            <div class="flex flex-col w-1/2">
+              <label class="label">
+                <span class="label-text">Height</span>
+              </label>
+              <input
+                type="number"
+                v-model="editingWidget.height"
+                class="input input-bordered"
+              />
+            </div>
+          </div>
+
+          <label class="label mt-4">
+            <span class="label-text">Touch Enabled</span>
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                class="toggle toggle-accent"
+                v-model="editingWidget.touchEnabled"
+                :title="touchTooltip"
+              />
+            </div>
+          </label>
+
+          <label class="label mt-4">
+            <span class="label-text">Custom User Agents</span>
+          </label>
+          <div class="flex flex-col gap-2">
+            <div
+              v-for="(userAgent, index) in editingWidget.customUserAgent"
+              :key="index"
+              class="flex items-center gap-2"
+            >
+              <input
+                v-model="userAgent.domain"
+                type="text"
+                class="input input-bordered w-1/2"
+                placeholder="Domain"
+              />
+              <input
+                v-model="userAgent.userAgent"
+                type="text"
+                class="input input-bordered w-1/2"
+                placeholder="User Agent"
+              />
+              <button
+                type="button"
+                class="btn btn-error"
+                @click="removeUserAgent(index)"
+              >
+                -
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn btn-info btn-sm w-full mt-2"
+            @click="addUserAgent"
+          >
+            +
+          </button>
+
+          <label class="label mt-4">
+            <span class="label-text">Permissions</span>
+
+            <!-- Search Bar with Dropdown -->
+            <div class="relative">
+              <input
+                type="text"
+                v-model="searchQuery"
+                @input="filterPermissions"
+                placeholder="Search permissions..."
+                class="input input-bordered w-full"
+              />
+
+              <!-- Dropdown list for filtered permissions -->
+              <div
+                v-if="filteredPermissions.length > 0 && searchQuery"
+                class="absolute z-10 w-full bg-white border border-gray-300 shadow-lg mt-1 max-h-60 overflow-y-auto"
+              >
+                <ul>
+                  <li
+                    v-for="(perm, index) in filteredPermissions"
+                    :key="index"
+                    class="cursor-pointer hover:bg-gray-200 p-2"
+                    @click="addPermission(perm)"
+                  >
+                    {{ perm }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </label>
+
+          <!-- Selected Permissions List -->
+          <div class="mt-4 flex flex-wrap">
+            <div
+              v-for="perm in selectedPermissions"
+              :key="perm"
+              class="badge badge-info mr-2 mb-2 flex items-center"
+            >
+              {{ perm }}
+              <button type="button" @click="removePermission(perm)">
+                <i class="las la-times ml-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <label class="label mt-4">
+            <span class="label-text">Custom Script</span>
+            <input
+              type="text"
+              v-model="editingWidget.customScript"
+              class="input input-bordered"
+              placeholder="Enter script"
+            />
+          </label>
+
+          <div class="mt-4">
+            <button type="submit" class="btn btn-success">
+              {{ editingWidget ? 'Save Changes' : 'Create Widget' }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="cancelEditing"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.min.js"></script>
+  <script src="./edit-widget.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</html>
