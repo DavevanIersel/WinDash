@@ -6,7 +6,6 @@ new Vue({
     editingWidget: null,
     creatingNewWidget: true,
     searchQuery: "",
-    selectedPermissions: {},
     allPermissions: [
       "clipboard-read",
       "clipboard-sanitized-write",
@@ -58,20 +57,20 @@ new Vue({
         (perm) =>
           perm.toLowerCase().includes(this.searchQuery.toLowerCase()) &&
           !(
-            this.selectedPermissions[perm] === true ||
-            this.selectedPermissions[perm] === false
+            this.editingWidget.permissions[perm] === true ||
+            this.editingWidget.permissions[perm] === false
           )
       );
     },
     addPermission(perm, permitted) {
-      this.$set(this.selectedPermissions, perm, permitted);
+      this.$set(this.editingWidget.permissions, perm, permitted);
       this.filteredPermissions = this.filteredPermissions.filter(
         (item) => item !== perm
       );
       this.searchQuery = "";
     },
     removePermission(perm) {
-      this.$delete(this.selectedPermissions, perm);
+      this.$delete(this.editingWidget.permissions, perm);
       this.filteredPermissions.push(perm);
       this.searchQuery = "";
     },
@@ -80,7 +79,7 @@ new Vue({
     },
     saveWidget() {
       console.log(this.editingWidget);
-      this.editingWidget.permissions = this.selectedPermissions;
+      this.editingWidget.permissions = this.editingWidget.permissions;
       if ((this.editingWidget.html === "")) {
         this.editingWidget.html = undefined;
       }
@@ -103,6 +102,12 @@ new Vue({
     ipcRenderer.on("load-widget", (_event, widget) => {
       if (widget) {
         this.editingWidget = widget;
+        if ((this.editingWidget.html === undefined)) {
+          this.editingWidget.html = "";
+        }
+        if ((this.editingWidget.url === undefined)) {
+          this.editingWidget.url = "";
+        }
         creatingNewWidget = false;
       } else {
         this.editingWidget = {

@@ -182,7 +182,7 @@
           <!-- Selected Permissions List -->
           <div class="mt-4 flex flex-wrap">
             <div
-              v-for="(value, perm) in selectedPermissions"
+              v-for="(value, perm) in editingWidget.permissions"
               :key="perm"
               :class="[
         'badge mr-2 mb-2 flex items-center',
