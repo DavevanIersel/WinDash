@@ -138,42 +138,56 @@
 
           <label class="label mt-4">
             <span class="label-text">Permissions</span>
-
-            <!-- Search Bar with Dropdown -->
-            <div class="relative">
-              <input
-                type="text"
-                v-model="searchQuery"
-                @input="filterPermissions"
-                placeholder="Search permissions..."
-                class="input input-bordered w-full"
-              />
-
-              <!-- Dropdown list for filtered permissions -->
-              <div
-                v-if="filteredPermissions.length > 0 && searchQuery"
-                class="absolute z-10 w-full bg-white border border-gray-300 shadow-lg mt-1 max-h-60 overflow-y-auto"
-              >
-                <ul>
-                  <li
-                    v-for="(perm, index) in filteredPermissions"
-                    :key="index"
-                    class="cursor-pointer hover:bg-gray-200 p-2"
-                    @click="addPermission(perm)"
-                  >
-                    {{ perm }}
-                  </li>
-                </ul>
-              </div>
-            </div>
           </label>
+          <!-- Search Bar with Dropdown -->
+          <div class="relative">
+            <input
+              type="text"
+              v-model="searchQuery"
+              @input="filterPermissions"
+              placeholder="Search permissions..."
+              class="input input-bordered w-full"
+            />
 
+            <!-- Dropdown list for filtered permissions -->
+            <div
+              v-if="filteredPermissions.length > 0 && searchQuery"
+              class="absolute z-10 w-full bg-white border border-gray-300 shadow-lg mt-1 max-h-60 overflow-y-auto"
+            >
+              <ul>
+                <li
+                  v-for="(perm, index) in filteredPermissions"
+                  :key="index"
+                  class="p-2 flex justify-between"
+                >
+                  <div class="flex-1">{{ perm }}</div>
+                  <div class="flex space-x-2">
+                    <button
+                      @click="addPermission(perm, true)"
+                      class="btn btn-sm btn-success"
+                    >
+                      <i class="las la-check-circle bold"></i>
+                    </button>
+                    <button
+                      @click="addPermission(perm, false)"
+                      class="btn btn-sm btn-error"
+                    >
+                      <i class="las la-ban bold"></i>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
           <!-- Selected Permissions List -->
           <div class="mt-4 flex flex-wrap">
             <div
-              v-for="perm in selectedPermissions"
+              v-for="(value, perm) in selectedPermissions"
               :key="perm"
-              class="badge badge-info mr-2 mb-2 flex items-center"
+              :class="[
+        'badge mr-2 mb-2 flex items-center',
+        value === true ? 'badge-info' : value === false ? 'badge-error' : 'badge-neutral'
+      ]"
             >
               {{ perm }}
               <button type="button" @click="removePermission(perm)">
@@ -181,16 +195,6 @@
               </button>
             </div>
           </div>
-
-          <label class="label mt-4">
-            <span class="label-text">Custom Script</span>
-            <input
-              type="text"
-              v-model="editingWidget.customScript"
-              class="input input-bordered"
-              placeholder="Enter script"
-            />
-          </label>
 
           <div class="mt-4">
             <button type="submit" class="btn btn-success">

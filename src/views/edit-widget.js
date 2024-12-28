@@ -6,7 +6,7 @@ new Vue({
     editingWidget: null,
     creatingNewWidget: true,
     searchQuery: "",
-    selectedPermissions: [],
+    selectedPermissions: {},
     allPermissions: [
       "clipboard-read",
       "clipboard-sanitized-write",
@@ -34,10 +34,10 @@ new Vue({
   },
   methods: {
     isUrlFilled() {
-      return this.editingWidget.url.trim() !== '';
+      return this.editingWidget.url.trim() !== "";
     },
     isHtmlFilled() {
-      return this.editingWidget.html.trim() !== '';
+      return this.editingWidget.html.trim() !== "";
     },
     addUserAgent() {
       this.editingWidget.customUserAgent.push({
@@ -46,34 +46,32 @@ new Vue({
       });
     },
     removeUserAgent(index) {
-        // Possibly a weird bug where splice doesnt remove the element at index 0 when array is 1 big
-        console.log(" removing")
-        console.log(this.editingWidget.customUserAgent)
-        if (this.editingWidget.customUserAgent.length === 1) {
-          this.editingWidget.customUserAgent = [];
-        } else {
-          this.editingWidget.customUserAgent.splice(index, 1);
-        }
-        console.log(this.editingWidget.customUserAgent)
+      // Possibly a weird bug where splice doesnt remove the element at index 0 when array is 1 big
+      if (this.editingWidget.customUserAgent.length === 1) {
+        this.editingWidget.customUserAgent = [];
+      } else {
+        this.editingWidget.customUserAgent.splice(index, 1);
+      }
     },
     filterPermissions() {
       this.filteredPermissions = this.allPermissions.filter(
         (perm) =>
           perm.toLowerCase().includes(this.searchQuery.toLowerCase()) &&
-          !this.selectedPermissions.includes(perm)
+          !(
+            this.selectedPermissions[perm] === true ||
+            this.selectedPermissions[perm] === false
+          )
       );
     },
-    addPermission(perm) {
-      this.selectedPermissions.push(perm);
+    addPermission(perm, permitted) {
+      this.$set(this.selectedPermissions, perm, permitted);
       this.filteredPermissions = this.filteredPermissions.filter(
         (item) => item !== perm
       );
       this.searchQuery = "";
     },
     removePermission(perm) {
-      this.selectedPermissions = this.selectedPermissions.filter(
-        (item) => item !== perm
-      );
+      this.$delete(this.selectedPermissions, perm);
       this.filteredPermissions.push(perm);
       this.searchQuery = "";
     },
@@ -81,14 +79,17 @@ new Vue({
       ipcRenderer.send("update-preview", this.editingWidget);
     },
     saveWidget() {
-      ipcRenderer.send("create-or-edit-widget", this.editingWidget);
-      if (this.isUrlFilled()) {
+      console.log(this.editingWidget);
+      this.editingWidget.permissions = this.selectedPermissions;
+      if ((this.editingWidget.html === "")) {
         this.editingWidget.html = undefined;
-      } else {
+      }
+      if ((this.editingWidget.url === "")) {
         this.editingWidget.url = undefined;
       }
+      ipcRenderer.send("create-or-edit-widget", this.editingWidget);
       ipcRenderer.send("update-preview", this.editingWidget);
-      this.cancelEditing(); 
+      this.cancelEditing();
     },
     cancelEditing() {
       this.editingWidget = null;
@@ -106,8 +107,8 @@ new Vue({
       } else {
         this.editingWidget = {
           name: "",
-          url: '',
-          html: '',
+          url: "",
+          html: "",
           x: 40,
           y: 40,
           width: 600,
