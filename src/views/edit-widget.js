@@ -78,13 +78,14 @@ new Vue({
       ipcRenderer.send("update-preview", this.editingWidget);
     },
     saveWidget() {
-      console.log(this.editingWidget);
-      this.editingWidget.permissions = this.editingWidget.permissions;
-      if ((this.editingWidget.html === "")) {
-        this.editingWidget.html = undefined;
+      if (Array.isArray(this.editingWidget.permissions) && this.editingWidget.permissions.length === 0) {
+        delete this.editingWidget.permissions;
       }
-      if ((this.editingWidget.url === "")) {
-        this.editingWidget.url = undefined;
+      if (this.editingWidget.html === "") {
+        delete this.editingWidget.html;
+      }
+      if (this.editingWidget.url === "") {
+        delete this.editingWidget.url;
       }
       this.editingWidget.width = Number(this.editingWidget.width);
       this.editingWidget.height = Number(this.editingWidget.height);
@@ -101,13 +102,13 @@ new Vue({
   mounted() {
     this.filteredPermissions = this.allPermissions.slice();
 
-    ipcRenderer.on("load-widget", (_event, widget) => {
+    ipcRenderer.on("load-widget-for-edit", (_event, widget) => {
       if (widget) {
         this.editingWidget = widget;
-        if ((this.editingWidget.html === undefined)) {
+        if (this.editingWidget.html === undefined) {
           this.editingWidget.html = "";
         }
-        if ((this.editingWidget.url === undefined)) {
+        if (this.editingWidget.url === undefined) {
           this.editingWidget.url = "";
         }
         creatingNewWidget = false;
@@ -121,7 +122,7 @@ new Vue({
           width: 600,
           height: 400,
           enabled: undefined,
-          touchEnabled: undefined,
+          touchEnabled: undefined, //TODO should be removed on save if still undefined
           customUserAgent: [],
           permissions: [],
           customScript: undefined,

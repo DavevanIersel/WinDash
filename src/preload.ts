@@ -20,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   //Set widget locations for click pass through
-  ipcRenderer.on("widget-location-update-for-preload", (event, positions) => {
+  ipcRenderer.on("widget-location-update-for-preload", (_event, positions) => {
     widgets = positions;
   });
 
@@ -28,7 +28,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!el) return false;
 
     const rect = el.getBoundingClientRect();
-    for (let [id, position] of widgets) {
+    for (let [_id, position] of widgets) {
       if (
         rect.left >= position.x &&
         rect.right <= position.x + position.width &&

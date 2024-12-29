@@ -44,14 +44,17 @@ export class WindowManager {
       } else {
         this.mainWindow.webContents.openDevTools({ mode: "detach" });
       }
-      event.reply("devtools-status", this.mainWindow.webContents.isDevToolsOpened());
+      event.reply(
+        "devtools-status",
+        this.mainWindow.webContents.isDevToolsOpened()
+      );
     });
 
     // Handle pass through when clicking on transparent parts of the window (called by preload.ts)
     ipcMain.on("set-click-through", (_event, shouldPassThrough: boolean) => {
       if (this.mainWindow) {
         if (shouldPassThrough) {
-          this.mainWindow.setIgnoreMouseEvents(true, { forward: true }); 
+          this.mainWindow.setIgnoreMouseEvents(true, { forward: true });
         } else {
           this.mainWindow.setIgnoreMouseEvents(false);
         }

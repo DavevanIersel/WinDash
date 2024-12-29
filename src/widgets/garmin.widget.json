@@ -2,7 +2,7 @@
   "$schema": "widget-schema.json",
   "name": "Garmin Dashboard",
   "url": "https://connect.garmin.com/modern/home",
-  "enabled": true,
+  "enabled": false,
   "x": 18,
   "y": 2,
   "width": 10,

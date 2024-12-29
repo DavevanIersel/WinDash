@@ -2,7 +2,7 @@
   "$schema": "widget-schema.json",
   "name": "MyAnimeList Profile",
   "url": "https://myanimelist.net/animelist/Dn_Dave?status=7",
-  "enabled": true,
+  "enabled": false,
   "x": 2,
   "y": 11,
   "width": 15,

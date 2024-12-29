@@ -1,4 +1,4 @@
-import { WebContentsView, ipcMain, session, dialog } from "electron";
+import { WebContentsView, session, dialog, ipcMain } from "electron";
 import { Widget } from "../models/Widget";
 import { WindowManager } from "./WindowManager";
 import { join } from "path";
@@ -7,7 +7,6 @@ import { Position } from "../models/Position";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
 import { getExplicitPermissions } from "../utils/permissionUtils";
 import { Permission } from "../models/Permission";
-import { AppManager } from "./AppManager";
 
 const viewIdToWidgetMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
@@ -18,16 +17,13 @@ const cssContent = readFileSync(cssPath, "utf-8");
 export class WidgetManager {
   private windowManager: WindowManager;
   private widgetFileSystemService: WidgetFileSystemService;
-  private appManager: AppManager;
 
   constructor(
     windowManager: WindowManager,
-    widgetFileSystemService: WidgetFileSystemService,
-    appManager: AppManager
+    widgetFileSystemService: WidgetFileSystemService
   ) {
     this.windowManager = windowManager;
     this.widgetFileSystemService = widgetFileSystemService;
-    this.appManager = appManager;
   }
 
   public initializeWidgets() {
@@ -37,24 +33,86 @@ export class WidgetManager {
     this.sendWidgetPositions();
     overwriteUserAgents();
 
-    ipcMain.on(
-      "update-widget-positions",
-      (event, widgetPositions: Map<number, Position>, save: boolean) => {
-        this.updateWidgetPositions(widgetPositions, save);
-      }
-    );
+    this.widgetFileSystemService.on("reload-widget", (widget: Widget) => {
+      const viewExists = this.viewExists(widget.id);
+      const oldWidget = viewIdToWidgetMap.get(
+        this.getViewIDByWidgetID(widget.id)
+      );
 
-    ipcMain.on("update-widget-data", (_event, widget: Widget) => {
-      const viewId = this.getViewIDByWidgetID(widget.id);
-
-      if (viewId && viewIdToWidgetMap.get(viewId)) {
-        this.removeWidget(viewId);
+      const shouldRerender = this.shouldRerender(oldWidget, widget);
+      if (viewExists && shouldRerender) {
+        this.removeWidget(widget);
       }
-      if (widget.enabled) {
+      if (shouldRerender && widget.enabled) {
         this.createWidget(widget);
+      }
+
+      if (!shouldRerender) {
+        views
+          .find(
+            (view) =>
+              view.webContents.id === this.getViewIDByWidgetID(widget.id)
+          )
+          .setBounds({
+            x: widget.x,
+            y: widget.y,
+            width: widget.width,
+            height: widget.height,
+          });
       }
       this.sendWidgetPositions();
     });
+
+    this.widgetFileSystemService.on("reload-widgets", (widgets: Widget[]) => {
+      widgets.forEach((widget) => {
+        const viewExists = this.viewExists(widget.id);
+        const oldWidget = viewIdToWidgetMap.get(
+          this.getViewIDByWidgetID(widget.id)
+        );
+        const shouldRerender = this.shouldRerender(oldWidget, widget);
+        if (viewExists && shouldRerender) {
+          this.removeWidget(widget);
+        }
+        if (shouldRerender && widget.enabled) {
+          this.createWidget(widget);
+        }
+
+        if (!shouldRerender) {
+          views
+            .find(
+              (view) =>
+                view.webContents.id === this.getViewIDByWidgetID(widget.id)
+            )
+            .setBounds({
+              x: widget.x,
+              y: widget.y,
+              width: widget.width,
+              height: widget.height,
+            });
+        }
+      });
+      this.sendWidgetPositions();
+    });
+  }
+
+  private shouldRerender(oldWidget?: Widget, newWidget?: Widget) {
+    if (!oldWidget || !newWidget) return true;
+    return (
+      oldWidget.id !== newWidget.id ||
+      oldWidget.fileName !== newWidget.fileName ||
+      oldWidget.name !== newWidget.name ||
+      oldWidget.html !== newWidget.html ||
+      oldWidget.url !== newWidget.url ||
+      oldWidget.touchEnabled !== newWidget.touchEnabled ||
+      oldWidget.enabled !== newWidget.enabled ||
+      oldWidget.customScript !== newWidget.customScript ||
+      oldWidget.devTools !== newWidget.devTools ||
+      // Deep equality as these are arrays with objects in them
+      JSON.stringify(oldWidget.customUserAgent) !==
+        JSON.stringify(newWidget.customUserAgent) ||
+      JSON.stringify(oldWidget.permissions) !==
+        JSON.stringify(newWidget.permissions)
+    );
   }
 
   private createWidget(widget: Widget) {
@@ -182,45 +240,12 @@ export class WidgetManager {
     }
   }
 
-  private updateWidgetPositions(
-    widgetPositions: Map<number, Position>,
-    save: boolean
-  ) {
-    this.sendWidgetPositions();
-    widgetPositions.forEach((position, id) => {
-      const widget = viewIdToWidgetMap.get(id);
-      if (widget) {
-        viewIdToWidgetMap.set(id, {
-          ...widget,
-          x: position.x,
-          y: position.y,
-          width: position.width,
-          height: position.height,
-        });
-
-        const view = views.find((view) => view.webContents.id === id);
-        console.log(widget);
-        if (save) {
-          this.widgetFileSystemService.saveWidgetConfig(widget);
-        } else {
-          this.widgetFileSystemService.updateWidgetInMemory(widget);
-          this.appManager.updateLibraryWidgets();
-        }
-        view?.setBounds({
-          x: position.x,
-          y: position.y,
-          width: position.width,
-          height: position.height,
-        });
-      }
-    });
-  }
-
   //Update positions for click pass through calculations (preload.ts)
   private sendWidgetPositions() {
     const widgetPositions = new Map<number, Position>();
-    viewIdToWidgetMap.forEach((widget, id) => {
-      widgetPositions.set(id, {
+    viewIdToWidgetMap.forEach((widget, viewId) => {
+      widgetPositions.set(viewId, {
+        widgetId: widget.id,
         x: widget.x,
         y: widget.y,
         width: widget.width,
@@ -228,13 +253,13 @@ export class WidgetManager {
       });
     });
 
-    const mainWindow = this.windowManager.getMainWindow();
-    if (mainWindow && mainWindow.webContents) {
-      mainWindow.webContents.send(
-        "widget-location-update-for-preload",
-        widgetPositions
-      );
-    }
+    this.windowManager
+      .getMainWindow()
+      .webContents.send("widget-location-update-for-preload", widgetPositions);
+  }
+  private viewExists(widgetId: string) {
+    const viewId = this.getViewIDByWidgetID(widgetId);
+    return viewId && viewIdToWidgetMap.get(viewId);
   }
 
   private getViewIDByWidgetID(widgetId: string): number | null {
@@ -267,10 +292,8 @@ export class WidgetManager {
     this.sendWidgetPositions();
   }
 
-  public removeWidget(viewId: number) {
-    const widget = viewIdToWidgetMap.get(viewId);
-    if (!widget) return;
-
+  public removeWidget(widget: Widget) {
+    const viewId = this.getViewIDByWidgetID(widget.id);
     viewIdToWidgetMap.delete(viewId);
     const viewIndex = views.findIndex((view) => view.webContents.id === viewId);
 
@@ -278,9 +301,11 @@ export class WidgetManager {
       const view = views.splice(viewIndex, 1)[0];
       this.windowManager.getMainWindow().contentView.removeChildView(view);
       view.webContents?.close();
+    } else {
+      console.error(
+        `View not found: widget ID - ${widget.id}, view ID - ${viewId}`
+      );
     }
-    widget.enabled = false;
-    this.widgetFileSystemService.saveWidgetConfig(widget);
     this.windowManager
       .getMainWindow()
       .webContents.send("remove-draggable-widget", widget);

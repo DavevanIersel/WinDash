@@ -2,7 +2,7 @@
   "$schema": "widget-schema.json",
   "name": "Spotify",
   "url": "https://open.spotify.com",
-  "enabled": true,
+  "enabled": false,
   "x": 2,
   "y": 11,
   "width": 15,

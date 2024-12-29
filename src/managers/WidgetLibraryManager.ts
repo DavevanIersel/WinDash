@@ -2,20 +2,23 @@ import { BrowserWindow, ipcMain, screen } from "electron";
 import * as path from "path";
 import { Widget } from "../models/Widget";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
-import { WidgetManager } from "./WidgetManager";
 
 export class WidgetLibraryManager {
   private libraryWindow: BrowserWindow | null = null;
   private widgetFileSystemService: WidgetFileSystemService;
-  private widgetManager: WidgetManager;
 
   constructor(
-    widgetFileSystemService: WidgetFileSystemService,
-    widgetManager: WidgetManager
+    widgetFileSystemService: WidgetFileSystemService
   ) {
     this.widgetFileSystemService = widgetFileSystemService;
-    this.widgetManager = widgetManager;
-    this.addCreateOrEditWidgetListener();
+
+    ipcMain.on("toggle-library", () => {
+      if (this.libraryWindow) {
+        this.libraryWindow.close();
+      } else {
+        this.createLibraryWindow();
+      }
+    });
   }
 
   public createLibraryWindow() {
@@ -39,15 +42,18 @@ export class WidgetLibraryManager {
         partition: "persist:session",
       },
     });
+
     this.libraryWindow.setAlwaysOnTop(true, "floating");
-    this.libraryWindow.on("closed", (): void => (this.libraryWindow = null));
     this.loadLibrary();
-    ipcMain.on("close-window", () => {
-      this.libraryWindow?.close();
+
+    this.libraryWindow.on("closed", (): void => (this.libraryWindow = null));
+
+    this.widgetFileSystemService.on("reload-widget", (_widget: Widget) => {
+      this.reloadWidgets();
     });
 
-    ipcMain.on("update-widget-data", (_event, widget: Widget) => {
-      this.updateWidget(widget);
+    this.widgetFileSystemService.on("reload-widgets", (_widgets: Widget[]) => {
+      this.reloadWidgets();
     });
 
     ipcMain.on(
@@ -58,62 +64,36 @@ export class WidgetLibraryManager {
             path.join(__dirname, "../views/edit-widget.html")
           );
           this.libraryWindow.webContents.once("did-finish-load", () => {
-            this.libraryWindow?.webContents.send("load-widget", widget);
+            this.libraryWindow?.webContents.send("load-widget-for-edit", widget);
           });
         } else {
           this.loadLibrary();
         }
       }
     );
+    
+    ipcMain.on("close-window", this.cleanupListeners);
   }
 
   public loadLibrary() {
     this.libraryWindow.loadFile(path.join(__dirname, "../views/library.html"));
     this.libraryWindow.webContents.once("did-finish-load", () => {
-      this.updateWidgets();
+      this.reloadWidgets();
     });
   }
 
-  public updateWidgets() {
+  public reloadWidgets() {
     this.libraryWindow?.webContents.send(
       "update-widgets",
       this.widgetFileSystemService.getWidgets(true)
     );
   }
 
-  public toggleLibraryWindow() {
-    if (this.libraryWindow) {
-      this.libraryWindow.close();
-    } else {
-      this.createLibraryWindow();
-    }
-  }
-
-  private updateWidget(widget: Widget) {
-    this.widgetFileSystemService.updateWidgetInMemory(widget);
-    this.libraryWindow?.webContents.send(
-      "update-widgets",
-      this.widgetFileSystemService.getWidgets(true)
-    );
-  }
-
-  private addCreateOrEditWidgetListener() {
-    ipcMain.on("create-or-edit-widget", (_event, widget: Widget) => {
-      if (widget.fileName === undefined) {
-        //New widget
-        widget.fileName = this.widgetFileSystemService.toSafeWidgetName(
-          widget.name
-        );
-      }
-      this.widgetFileSystemService.saveWidgetConfig(widget);
-      this.libraryWindow?.webContents.send(
-        "update-widgets",
-        this.widgetFileSystemService.getWidgets(true)
-      );
-
-      if (widget.enabled) {
-        this.widgetManager.rerenderWidget(widget);
-      }
-    });
+  private cleanupListeners() {
+    this.libraryWindow?.close();
+    this.widgetFileSystemService.removeListener("reload-widget", this.reloadWidgets);
+    this.widgetFileSystemService.removeListener("reload-widgets", this.reloadWidgets);
+    
+    ipcMain.removeListener("close-window", this.cleanupListeners);
   }
 }

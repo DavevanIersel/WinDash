@@ -17,8 +17,8 @@ new Vue({
     },
   },
   methods: {
-    updateWidget(widget) {
-      ipcRenderer.send("update-widget-data", widget);
+    toggleWidgetEnabled(widget) {
+      ipcRenderer.send("toggle-widget-enabled", widget);
     },
     createWidgetView() {
       ipcRenderer.send("toggle-edit-widget-view", true);

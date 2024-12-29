@@ -2,7 +2,7 @@
   "$schema": "../widget-schema.json",
   "name": "New widget",
   "html": "./custom-widget-template/custom-widget-template.widget.html",
-  "enabled": true,
+  "enabled": false,
   "x": 2,
   "y": 2,
   "width": 15,

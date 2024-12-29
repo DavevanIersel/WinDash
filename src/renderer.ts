@@ -80,6 +80,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   ipcRenderer.on("remove-draggable-widget", (_event, widget) => {
     widgetIdToKonvaGroupMap.get(widget.id).destroy();
+    widgetIdToKonvaGroupMap.delete(widget.id);
+    for (const [viewId, position] of widgetPositions) {
+      if (position.widgetId === widget.id) {
+          widgetPositions.delete(viewId);
+          break;
+      }
+  }
     layer.draw();
   });
 
@@ -88,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     viewId: number,
     position: { x: number; y: number; width: number; height: number }
   ) {
-    widgetPositions.set(viewId, position);
+    widgetPositions.set(viewId, {...position, widgetId: widgetId});
 
     const widgetGroup = new Konva.Group({
       x: snapToGrid(position.x),
@@ -142,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
         y: -moveHandleSize,
       });
 
-      updateWidgetPosition(viewId, { x: newX, y: newY });
+      updateWidgetPosition(widgetId, viewId, { x: newX, y: newY });
       layer.draw();
     });
 
@@ -163,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         y: -moveHandleSize,
       });
 
-      updateWidgetPosition(viewId, { width: newWidth, height: newHeight });
+      updateWidgetPosition(widgetId, viewId, { width: newWidth, height: newHeight });
       layer.draw();
     });
 
@@ -179,11 +186,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateWidgetPosition(
-    id: number,
+    widgetId: string,
+    viewId: number,
     newPos: { x?: number; y?: number; width?: number; height?: number }
   ): void {
-    const oldPos = widgetPositions.get(id);
-    widgetPositions.set(id, {
+    const oldPos = widgetPositions.get(viewId);
+    widgetPositions.set(viewId, {
+      widgetId: widgetId,
       x: newPos.x ?? oldPos.x,
       y: newPos.y ?? oldPos.y,
       width: newPos.width ?? oldPos.width,

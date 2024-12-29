@@ -2,7 +2,7 @@
   "$schema": "widget-schema.json",
   "name": "Google Calendar",
   "url": "https://calendar.google.com/calendar/u/0/r/month?pli=1",
-  "enabled": true,
+  "enabled": false,
   "x": 2,
   "y": 2,
   "width": 15,

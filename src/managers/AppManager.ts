@@ -1,4 +1,4 @@
-import { app, components, ipcMain, session } from "electron";
+import { app, components, session } from "electron";
 import { WindowManager } from "./WindowManager";
 import { TrayManager } from "./TrayManager";
 import { WidgetManager } from "./WidgetManager";
@@ -14,12 +14,12 @@ export class AppManager {
   private widgetFileSystemService: WidgetFileSystemService;
 
   constructor() {
+    this.widgetFileSystemService = new WidgetFileSystemService();
     this.windowManager = new WindowManager();
     this.trayManager = new TrayManager();
     this.widgetFileSystemService = new WidgetFileSystemService();
-    this.widgetManager = new WidgetManager(this.windowManager, this.widgetFileSystemService, this);
-    this.widgetLibraryManager = new WidgetLibraryManager(this.widgetFileSystemService, this.widgetManager);
-    this.widgetFileSystemService = new WidgetFileSystemService();
+    this.widgetManager = new WidgetManager(this.windowManager, this.widgetFileSystemService);
+    this.widgetLibraryManager = new WidgetLibraryManager(this.widgetFileSystemService);
   }
 
   public async initialize() {
@@ -33,14 +33,6 @@ export class AppManager {
     this.widgetManager.initializeWidgets();
 
     app.on("window-all-closed", this.onAllWindowsClosed);
-  
-    ipcMain.on("toggle-library", () => {
-      this.widgetLibraryManager.toggleLibraryWindow();
-    });
-  }
-
-  public updateLibraryWidgets() {
-    this.widgetLibraryManager.updateWidgets();
   }
 
   private onAllWindowsClosed() {
