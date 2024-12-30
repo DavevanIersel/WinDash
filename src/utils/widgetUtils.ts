@@ -77,13 +77,23 @@ export function setOnDidFinishLoadHandler(
   view: WebContentsView,
   widget: Widget
 ) {
-  view.webContents.on("did-finish-load", () => {
+  if (view.webContents.isLoading()) {
+    view.webContents.on("did-finish-load", () => {
+      view.webContents.insertCSS(cssContent);
+
+      if (widget.touchEnabled) {
+        enableTouchEmulation(view);
+      }
+    });
+  } else {
     view.webContents.insertCSS(cssContent);
 
     if (widget.touchEnabled) {
       enableTouchEmulation(view);
+    } else {
+      disableTouchEmulation(view);
     }
-  });
+  }
 }
 
 export function setZoomFactor(view: WebContentsView, zoomFactor: number) {
@@ -113,4 +123,20 @@ function enableTouchEmulation(view: WebContentsView) {
       enabled: true,
     }
   );
+}
+
+function disableTouchEmulation(view: WebContentsView) {
+  if (view.webContents.debugger && view.webContents.debugger.isAttached()) {
+    view.webContents.debugger.sendCommand(
+      "Emulation.setEmitTouchEventsForMouse",
+      {
+        enabled: false,
+      }
+    );
+    try {
+      view.webContents.debugger.detach();
+    } catch (error) {
+      console.error("Error detaching debugger:", error);
+    }
+  }
 }
