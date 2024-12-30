@@ -18,13 +18,6 @@
     <div id="app" class="flex h-full">
       <!-- Left Side: Widget Preview -->
       <div class="flex-grow-0 flex-shrink-0 w-3/5 border-r p-4">
-        <h2 class="text-xl font-bold">Widget Preview</h2>
-        <div v-if="editingWidget" class="border p-4 mt-4">
-          <h3>{{ editingWidget.name }}</h3>
-          <p>{{ editingWidget.description }}</p>
-          <div v-html="editingWidget.html"></div>
-        </div>
-        <p v-else>No widget selected for preview.</p>
       </div>
 
       <!-- Right Side: Form to Create/Edit Widget -->

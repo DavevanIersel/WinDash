@@ -1,18 +1,19 @@
-import { WebContentsView, session, dialog, ipcMain } from "electron";
+import { WebContentsView, session } from "electron";
 import { Widget } from "../models/Widget";
 import { WindowManager } from "./WindowManager";
-import { join } from "path";
-import { readFileSync } from "fs";
 import { Position } from "../models/Position";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
-import { getExplicitPermissions } from "../utils/permissionUtils";
-import { Permission } from "../models/Permission";
+import {
+  addScript,
+  setCloseHandler,
+  setOnDidFinishLoadHandler,
+  setPermissionHandler,
+  setWidgetWebContents,
+  setZoomFactor,
+} from "../utils/widgetUtils.js";
 
 const viewIdToWidgetMap = new Map<number, Widget>();
 const views: WebContentsView[] = [];
-
-const cssPath = join(__dirname, "../styles/widget-styles.css");
-const cssContent = readFileSync(cssPath, "utf-8");
 
 export class WidgetManager {
   private windowManager: WindowManager;
@@ -118,16 +119,7 @@ export class WidgetManager {
   private createWidget(widget: Widget) {
     const view = new WebContentsView();
 
-    if (widget.html) {
-      const localFilePath = join(__dirname, "../widgets", widget.html);
-      view.webContents.loadFile(localFilePath);
-    } else if (widget.url) {
-      view.webContents.loadURL(widget.url);
-    } else {
-      console.error("Widget must have either a 'url' or 'html'.");
-      return;
-    }
-
+    setWidgetWebContents(view, widget);
     viewIdToWidgetMap.set(view.webContents.id, widget);
     view.setBounds({
       x: widget.x,
@@ -135,62 +127,20 @@ export class WidgetManager {
       width: widget.width,
       height: widget.height,
     });
-
-    if (widget.devTools) {
-      view.webContents.toggleDevTools();
-    }
-
-    if (widget.customScript) {
-      view.webContents.executeJavaScript(widget.customScript);
-    }
-
-    view.webContents.on("did-finish-load", () => {
-      injectCSS(view.webContents);
-
-      if (widget.touchEnabled) {
-        enableTouchEmulation(view.webContents);
-      }
+    addScript(view, widget);
+    setOnDidFinishLoadHandler(view, widget);
+    setPermissionHandler(this.windowManager.getMainWindow(), {
+      getWidgetByViewId: (viewId: number) => viewIdToWidgetMap.get(viewId),
     });
+    setCloseHandler(view, this.windowManager.getMainWindow());
+    setZoomFactor(view, 1); //TODO: or custom value from config
 
     this.windowManager.getMainWindow().contentView.addChildView(view);
 
-    this.windowManager.getMainWindow().on("closed", () => {
-      view.webContents?.close();
-    });
-
-    session.defaultSession.setPermissionRequestHandler(
-      (webContents, permission, callback) => {
-        const currentWidget = viewIdToWidgetMap.get(webContents.id);
-        if (!widget) {
-          callback(false);
-          return;
-        }
-        const explicitPermission = getExplicitPermissions(
-          currentWidget.permissions
-        ).get(permission as Permission);
-
-        if (explicitPermission !== undefined) {
-          callback(explicitPermission);
-          return;
-        }
-
-        dialog
-          .showMessageBox(this.windowManager.getMainWindow(), {
-            type: "question",
-            buttons: ["Allow", "Deny"],
-            defaultId: 0,
-            title: "Permission Request",
-            message: `${currentWidget.name} wants to use the "${permission}" permission. Do you allow it?`,
-          })
-          .then((result) => {
-            callback(result.response === 0);
-          })
-          .catch((err) => {
-            console.error(err);
-            callback(false);
-          });
-      }
-    );
+    if (widget.devTools) {
+      //TODO: remove and replace for some button/ui interaction
+      view.webContents.toggleDevTools();
+    }
 
     // Add a container below the WebContentsView for grid management (Drag and Drop)
     this.createDraggableWidgetFromMain(
@@ -271,27 +221,6 @@ export class WidgetManager {
     return null;
   }
 
-  public rerenderWidget(widget: Widget) {
-    const viewId = this.getViewIDByWidgetID(widget.id);
-    if (viewId) {
-      viewIdToWidgetMap.delete(viewId);
-    }
-    const viewIndex = views.findIndex((view) => view.webContents.id === viewId);
-
-    if (viewIndex !== -1) {
-      const view = views.splice(viewIndex, 1)[0];
-      this.windowManager.getMainWindow().contentView.removeChildView(view);
-      view.webContents?.close();
-    }
-
-    this.windowManager
-      .getMainWindow()
-      .webContents.send("remove-draggable-widget", widget);
-
-    this.createWidget(widget);
-    this.sendWidgetPositions();
-  }
-
   public removeWidget(widget: Widget) {
     const viewId = this.getViewIDByWidgetID(widget.id);
     viewIdToWidgetMap.delete(viewId);
@@ -311,24 +240,6 @@ export class WidgetManager {
       .webContents.send("remove-draggable-widget", widget);
   }
 }
-
-const injectCSS = (webContents: any) => {
-  webContents.insertCSS(cssContent);
-};
-
-const enableTouchEmulation = (webContents: any) => {
-  if (webContents.debugger && !webContents.debugger.attached) {
-    try {
-      webContents.debugger.attach("1.3");
-    } catch (error) {
-      console.error("Error attaching debugger:", error);
-    }
-  }
-
-  webContents.debugger.sendCommand("Emulation.setEmitTouchEventsForMouse", {
-    enabled: true,
-  });
-};
 
 const overwriteUserAgents = () => {
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {

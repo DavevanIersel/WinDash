@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron");
+const debounce = require("lodash/debounce");
 
 new Vue({
   el: "#app",
@@ -74,11 +75,14 @@ new Vue({
       this.filteredPermissions.push(perm);
       this.searchQuery = "";
     },
-    updatePreview() {
+    updatePreview: debounce(function () {
       ipcRenderer.send("update-preview", this.editingWidget);
-    },
+    }, 500),
     saveWidget() {
-      if (Array.isArray(this.editingWidget.permissions) && this.editingWidget.permissions.length === 0) {
+      if (
+        Array.isArray(this.editingWidget.permissions) &&
+        this.editingWidget.permissions.length === 0
+      ) {
         delete this.editingWidget.permissions;
       }
       if (this.editingWidget.html === "") {
@@ -90,7 +94,6 @@ new Vue({
       this.editingWidget.width = Number(this.editingWidget.width);
       this.editingWidget.height = Number(this.editingWidget.height);
       ipcRenderer.send("create-or-edit-widget", this.editingWidget);
-      ipcRenderer.send("update-preview", this.editingWidget);
       this.cancelEditing();
     },
     cancelEditing() {
@@ -130,5 +133,13 @@ new Vue({
         };
       }
     });
+
+    this.$watch(
+      "editingWidget",
+      function () {
+        this.updatePreview();
+      },
+      { deep: true }
+    );
   },
 });
