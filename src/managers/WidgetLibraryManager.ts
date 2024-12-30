@@ -62,7 +62,6 @@ export class WidgetLibraryManager {
         const { x, y, width, height, zoomFactor } =
           this.calculatePreviewSizeAndPosition(this.previewWidget);
         this.previewView.setBounds({ x, y, width, height });
-        console.log(zoomFactor);
         this.previewView.webContents.setZoomFactor(zoomFactor);
       }
     });
