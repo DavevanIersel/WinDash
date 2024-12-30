@@ -90,7 +90,9 @@ export class WidgetLibraryManager {
               widget
             );
 
-            this.createWidgetPreview(widget);
+            this.previewView = new WebContentsView();
+            this.loadWidgetIntoPreview(widget);
+            this.libraryWindow.contentView.addChildView(this.previewView);
           });
         } else {
           this.removePreview();
@@ -100,7 +102,7 @@ export class WidgetLibraryManager {
     );
 
     ipcMain.on("update-preview", (_event, widget: Widget) => {
-      this.rerenderPreview(widget);
+      this.loadWidgetIntoPreview(widget);
     });
 
     ipcMain.on("close-window", this.cleanupListeners);
@@ -143,9 +145,9 @@ export class WidgetLibraryManager {
     this.previewWidget = null;
   }
 
-  private createWidgetPreview(widget: Widget) {
+  private loadWidgetIntoPreview(widget: Widget) {
     if (!widget || (!widget.html && !widget.url)) return;
-    this.previewView = new WebContentsView();
+    this.previewWidget = widget;
     setWidgetWebContents(this.previewView, widget);
     const { x, y, width, height, zoomFactor } =
       this.calculatePreviewSizeAndPosition(widget);
@@ -157,14 +159,6 @@ export class WidgetLibraryManager {
       widget: widget,
     });
     setCloseHandler(this.previewView, this.libraryWindow);
-    this.libraryWindow.contentView.addChildView(this.previewView);
-  }
-
-  private rerenderPreview(widget: Widget) {
-    if (this.previewView) {
-      this.removePreview();
-    }
-    this.createWidgetPreview(widget);
   }
 
   private calculatePreviewSizeAndPosition(widget: Widget): {
@@ -174,7 +168,6 @@ export class WidgetLibraryManager {
     height: number;
     zoomFactor: number;
   } {
-    this.previewWidget = widget;
     let { width: windowWidth, height: windowHeight } =
       this.libraryWindow.getContentBounds();
     const previewPaneWidth =
