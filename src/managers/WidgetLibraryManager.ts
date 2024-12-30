@@ -57,7 +57,7 @@ export class WidgetLibraryManager {
     this.libraryWindow.setAlwaysOnTop(true, "floating");
     this.loadLibrary();
 
-    this.libraryWindow.on('resize', () => {
+    this.libraryWindow.on("resize", () => {
       if (this.previewWidget) {
         const { x, y, width, height, zoomFactor } =
           this.calculatePreviewSizeAndPosition(this.previewWidget);
@@ -65,7 +65,7 @@ export class WidgetLibraryManager {
         this.previewView.webContents.setZoomFactor(zoomFactor);
       }
     });
-    
+
     this.libraryWindow.on("closed", (): void => (this.libraryWindow = null));
 
     this.widgetFileSystemService.on("reload-widget", (_widget: Widget) => {
@@ -146,8 +146,14 @@ export class WidgetLibraryManager {
 
   private loadWidgetIntoPreview(widget: Widget) {
     if (!widget || (!widget.html && !widget.url)) return;
+    const oldWidget = {...this.previewWidget};
     this.previewWidget = widget;
-    setWidgetWebContents(this.previewView, widget);
+    if (
+      oldWidget.html !== this.previewWidget.html ||
+      oldWidget.url !== this.previewWidget.url
+    ) {
+      setWidgetWebContents(this.previewView, widget);
+    }
     const { x, y, width, height, zoomFactor } =
       this.calculatePreviewSizeAndPosition(widget);
     this.previewView.setBounds({ x: x, y: y, width: width, height: height });
