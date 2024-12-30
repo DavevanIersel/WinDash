@@ -144,7 +144,7 @@ export class WidgetLibraryManager {
   }
 
   private createWidgetPreview(widget: Widget) {
-    if (!widget.html && !widget.url) return;
+    if (!widget || (!widget.html && !widget.url)) return;
     this.previewView = new WebContentsView();
     setWidgetWebContents(this.previewView, widget);
     const { x, y, width, height, zoomFactor } =
