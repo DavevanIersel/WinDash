@@ -62,6 +62,7 @@ export class WidgetLibraryManager {
         const { x, y, width, height, zoomFactor } =
           this.calculatePreviewSizeAndPosition(this.previewWidget);
         this.previewView.setBounds({ x, y, width, height });
+        console.log(zoomFactor);
         this.previewView.webContents.setZoomFactor(zoomFactor);
       }
     });
@@ -143,6 +144,7 @@ export class WidgetLibraryManager {
   }
 
   private createWidgetPreview(widget: Widget) {
+    if (!widget.html && !widget.url) return;
     this.previewView = new WebContentsView();
     setWidgetWebContents(this.previewView, widget);
     const { x, y, width, height, zoomFactor } =
@@ -202,6 +204,9 @@ export class WidgetLibraryManager {
     }
     if (previewY < PREVIEW_PANE_PADDING) {
       previewY = PREVIEW_PANE_PADDING;
+    }
+    if (zoomFactor <= 0.0) {
+      zoomFactor = 0.01;
     }
     return {
       x: previewX,
