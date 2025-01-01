@@ -76,6 +76,14 @@
       "devTools": {
         "type": "boolean",
         "description": "Enable developer tools for this widget"
+      },
+      "forceInCurrentTab": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "description": "Specifies URLs or domains to block from opening in separate tabs"
+        },
+        "description": "A list of URLs or domains to block from opening in separate tabs"
       }
     },
     "anyOf": [

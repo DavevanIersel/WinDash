@@ -2,7 +2,6 @@ import { app, components, session } from "electron";
 import { WindowManager } from "./WindowManager";
 import { TrayManager } from "./TrayManager";
 import { WidgetManager } from "./WidgetManager";
-import { ElectronBlocker } from "@ghostery/adblocker-electron";
 import { WidgetLibraryManager } from "./WidgetLibraryManager";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
 
@@ -25,8 +24,6 @@ export class AppManager {
   public async initialize() {
     await app.whenReady();
     await components.whenReady();
-    const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
-    blocker.enableBlockingInSession(session.defaultSession);
 
     this.windowManager.createMainWindow();
     this.trayManager.initialize(this.windowManager.getMainWindow());

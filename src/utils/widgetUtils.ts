@@ -4,10 +4,20 @@ import { join } from "path";
 import { getExplicitPermissions } from "./permissionUtils";
 import { Permission } from "../models/Permission";
 import { readFileSync } from "fs";
+import { ElectronBlocker } from "@ghostery/adblocker-electron";
 
 const WIDGETS_DIR = "../widgets";
+const SESSION_PREFIX = "persist:";
 const cssPath = join(__dirname, "../styles/widget-styles.css");
 const cssContent = readFileSync(cssPath, "utf-8");
+
+export function createView(widget: Widget): WebContentsView {
+  return new WebContentsView({
+    webPreferences: {
+      partition: `${SESSION_PREFIX}${widget.id}`,
+    },
+  });
+}
 
 export function setWidgetWebContents(view: WebContentsView, widget: Widget) {
   if (widget.html) {
@@ -27,24 +37,15 @@ export function addScript(view: WebContentsView, widget: Widget) {
   }
 }
 
-export function setPermissionHandler(
-  window: BrowserWindow,
-  resolveWidget: {
-    widget?: Widget;
-    getWidgetByViewId?: (viewId: number) => Widget | undefined;
-  }
-) {
-  //TODO: may only need one of these
-  session.defaultSession.setPermissionRequestHandler(
-    (webContents, permission, callback) => {
-      let widget = resolveWidget.widget;
-      if (!widget) {
-        widget = resolveWidget.getWidgetByViewId(webContents.id);
-        if (!widget) {
-          return;
-        }
-      }
+export async function addAdblocker(widget: Widget) {
+  const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
+  blocker.enableBlockingInSession(session.fromPartition(`${SESSION_PREFIX}${widget.id}`));
+}
 
+export function setPermissionHandler(window: BrowserWindow, widget: Widget) {
+  const widgetSession = session.fromPartition(`${SESSION_PREFIX}${widget.id}`);
+  widgetSession.setPermissionRequestHandler(
+    (_webContents, permission, callback) => {
       const explicitPermission = getExplicitPermissions(widget.permissions).get(
         permission as Permission
       );
@@ -139,4 +140,54 @@ function disableTouchEmulation(view: WebContentsView) {
       console.error("Error detaching debugger:", error);
     }
   }
+}
+
+export function forceInCurrentTab(view: WebContentsView, widget: Widget) {
+  if (!widget.forceInCurrentTab || !Array.isArray(widget.forceInCurrentTab))
+    return;
+
+  const handleWindowOpen = ({ url }: { url: string }) => {
+    console.log(url);
+    if (widget.forceInCurrentTab.some((part) => url.includes(part))) {
+      view.webContents.loadURL(url);
+      return { action: "deny" as "deny" | "allow" };
+    }
+    return { action: "allow" as "deny" | "allow" };
+  };
+
+  const handleWillNavigate = (event: Electron.Event, url: string) => {
+    console.log(url);
+    if (widget.forceInCurrentTab.some((part) => url.includes(part))) {
+      event.preventDefault();
+      view.webContents.loadURL(url);
+    }
+  };
+
+  view.webContents.setWindowOpenHandler(handleWindowOpen);
+  view.webContents.on("will-navigate", handleWillNavigate);
+
+  view.webContents.once("destroyed", () => {
+    view.webContents.setWindowOpenHandler(() => ({ action: "allow" }));
+    view.webContents.removeListener("will-navigate", handleWillNavigate);
+  });
+}
+
+export function overwriteUserAgents(widget: Widget) {
+  const widgetSession = session.fromPartition(`${SESSION_PREFIX}${widget.id}`);
+  widgetSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    const url = new URL(details.url);
+    let userAgent = widgetSession.getUserAgent();
+
+    if (Array.isArray(widget.customUserAgent)) {
+      const match = widget.customUserAgent.find(({ domain }) =>
+        url.hostname.includes(domain)
+      );
+      if (match) {
+        userAgent = match.userAgent;
+      }
+    }
+
+    details.requestHeaders["User-Agent"] = userAgent;
+    callback({ requestHeaders: details.requestHeaders });
+  });
 }

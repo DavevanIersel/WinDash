@@ -4,11 +4,15 @@ import { Widget } from "../models/Widget";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
 import {
   addScript,
+  forceInCurrentTab,
+  createView,
+  overwriteUserAgents,
   setCloseHandler,
   setOnDidFinishLoadHandler,
   setPermissionHandler,
   setWidgetWebContents,
   setZoomFactor,
+  addAdblocker,
 } from "../utils/widgetUtils.js";
 
 const PREVIEW_PANE_PADDING = 10;
@@ -89,7 +93,7 @@ export class WidgetLibraryManager {
               widget
             );
 
-            this.previewView = new WebContentsView();
+            this.previewView = createView(widget);
             this.loadWidgetIntoPreview(widget);
             this.libraryWindow.contentView.addChildView(this.previewView);
           });
@@ -146,7 +150,7 @@ export class WidgetLibraryManager {
 
   private loadWidgetIntoPreview(widget: Widget) {
     if (!widget || (!widget.html && !widget.url)) return;
-    const oldWidget = {...this.previewWidget};
+    const oldWidget = { ...this.previewWidget };
     this.previewWidget = widget;
     if (
       oldWidget.html !== this.previewWidget.html ||
@@ -158,11 +162,12 @@ export class WidgetLibraryManager {
       this.calculatePreviewSizeAndPosition(widget);
     this.previewView.setBounds({ x: x, y: y, width: width, height: height });
     setZoomFactor(this.previewView, zoomFactor);
+    addAdblocker(widget);
     addScript(this.previewView, widget);
     setOnDidFinishLoadHandler(this.previewView, widget);
-    setPermissionHandler(this.libraryWindow, {
-      widget: widget,
-    });
+    setPermissionHandler(this.libraryWindow, widget);
+    overwriteUserAgents(widget);
+    forceInCurrentTab(this.previewView, widget);
     setCloseHandler(this.previewView, this.libraryWindow);
   }
 

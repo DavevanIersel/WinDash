@@ -19,4 +19,5 @@ export interface Widget {
   permissions: { [key in Permission]?: boolean };               // Mapping of permissions a widget may ask for which you want to always accept/decline. (Example: Geolocation)
   customScript: string                                          // A custom JS script you want to be loaded on the widget webpage
   devTools: boolean                                             // Enable developer tools for this widget
+  forceInCurrentTab: string[];                                  // Paths opened by a webpage which include one of these strings, are forced into the widget tab, instead of opening a seperate one.
 }             

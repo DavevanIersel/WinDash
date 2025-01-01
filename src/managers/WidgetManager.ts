@@ -5,11 +5,15 @@ import { Position } from "../models/Position";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
 import {
   addScript,
+  forceInCurrentTab,
+  createView,
+  overwriteUserAgents,
   setCloseHandler,
   setOnDidFinishLoadHandler,
   setPermissionHandler,
   setWidgetWebContents,
   setZoomFactor,
+  addAdblocker,
 } from "../utils/widgetUtils.js";
 
 const viewIdToWidgetMap = new Map<number, Widget>();
@@ -32,7 +36,6 @@ export class WidgetManager {
       this.createWidget(widget);
     });
     this.sendWidgetPositions();
-    overwriteUserAgents();
 
     this.widgetFileSystemService.on("reload-widget", (widget: Widget) => {
       const viewExists = this.viewExists(widget.id);
@@ -108,6 +111,7 @@ export class WidgetManager {
       oldWidget.enabled !== newWidget.enabled ||
       oldWidget.customScript !== newWidget.customScript ||
       oldWidget.devTools !== newWidget.devTools ||
+      oldWidget.forceInCurrentTab !== newWidget.forceInCurrentTab ||
       // Deep equality as these are arrays with objects in them
       JSON.stringify(oldWidget.customUserAgent) !==
         JSON.stringify(newWidget.customUserAgent) ||
@@ -117,8 +121,8 @@ export class WidgetManager {
   }
 
   private createWidget(widget: Widget) {
-    const view = new WebContentsView();
-
+    const view = createView(widget);
+    overwriteUserAgents(widget);
     setWidgetWebContents(view, widget);
     viewIdToWidgetMap.set(view.webContents.id, widget);
     view.setBounds({
@@ -127,13 +131,13 @@ export class WidgetManager {
       width: widget.width,
       height: widget.height,
     });
+    addAdblocker(widget);
     addScript(view, widget);
     setOnDidFinishLoadHandler(view, widget);
-    setPermissionHandler(this.windowManager.getMainWindow(), {
-      getWidgetByViewId: (viewId: number) => viewIdToWidgetMap.get(viewId),
-    });
+    setPermissionHandler(this.windowManager.getMainWindow(), widget);
     setCloseHandler(view, this.windowManager.getMainWindow());
     setZoomFactor(view, 1); //TODO: or custom value from config
+    forceInCurrentTab(view, widget);
 
     this.windowManager.getMainWindow().contentView.addChildView(view);
 
@@ -240,25 +244,3 @@ export class WidgetManager {
       .webContents.send("remove-draggable-widget", widget);
   }
 }
-
-const overwriteUserAgents = () => {
-  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-    const url = new URL(details.url);
-    const originalUserAgent = session.defaultSession.getUserAgent();
-    let userAgent = originalUserAgent;
-
-    const widget = viewIdToWidgetMap.get(details.webContentsId);
-
-    if (widget && Array.isArray(widget.customUserAgent)) {
-      for (const { domain, userAgent: customAgent } of widget.customUserAgent) {
-        if (url.hostname.includes(domain)) {
-          userAgent = customAgent;
-          break;
-        }
-      }
-    }
-
-    details.requestHeaders["User-Agent"] = userAgent;
-    callback({ requestHeaders: details.requestHeaders });
-  });
-};

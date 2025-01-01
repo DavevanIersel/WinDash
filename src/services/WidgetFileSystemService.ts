@@ -131,7 +131,7 @@ class WidgetFileSystemService extends EventEmitter {
 
       return {
         ...widget,
-        id: uuidv4(),
+        id: widget.id || uuidv4(),
         fileName: filename,
         ...pixelCoordinates,
       };

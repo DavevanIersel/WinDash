@@ -33,6 +33,15 @@ new Vue({
     touchTooltip: "Enable touch controls for mobile-like interactions.",
   },
   methods: {
+    addForceInCurrentTab() {
+      if (!this.editingWidget.forceInCurrentTab) {
+        this.editingWidget.forceInCurrentTab = [];
+      }
+      this.editingWidget.forceInCurrentTab.push("");
+    },
+    removeForceInCurrentTab(index) {
+      this.editingWidget.forceInCurrentTab.splice(index, 1);
+    },
     isUrlFilled() {
       return this.editingWidget.url.trim() !== "";
     },
@@ -91,6 +100,12 @@ new Vue({
       if (this.editingWidget.url === "") {
         delete this.editingWidget.url;
       }
+      if (
+        Array.isArray(this.editingWidget.forceInCurrentTab) &&
+        this.editingWidget.forceInCurrentTab.length === 0
+      ) {
+        delete this.editingWidget.forceInCurrentTab;
+      }
       this.editingWidget.width = Number(this.editingWidget.width);
       this.editingWidget.height = Number(this.editingWidget.height);
       ipcRenderer.send("create-or-edit-widget", this.editingWidget);
@@ -126,6 +141,7 @@ new Vue({
           height: 400,
           enabled: undefined,
           touchEnabled: undefined, //TODO should be removed on save if still undefined
+          forceInCurrentTab: undefined,
           customUserAgent: [],
           permissions: [],
           customScript: undefined,
