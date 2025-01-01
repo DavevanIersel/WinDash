@@ -66,12 +66,9 @@ new Vue({
       this.filteredPermissions = this.allPermissions.filter(
         (perm) =>
           perm.toLowerCase().includes(this.searchQuery.toLowerCase()) &&
-          !(
-            this.editingWidget.permissions[perm] === true ||
-            this.editingWidget.permissions[perm] === false
-          )
+          !(perm in this.editingWidget.permissions)
       );
-    },
+    },    
     addPermission(perm, permitted) {
       this.$set(this.editingWidget.permissions, perm, permitted);
       this.filteredPermissions = this.filteredPermissions.filter(
@@ -106,6 +103,12 @@ new Vue({
       ) {
         delete this.editingWidget.forceInCurrentTab;
       }
+      if (
+        Array.isArray(this.editingWidget.permissions) &&
+        this.editingWidget.permissions.length === 0
+      ) {
+        delete this.editingWidget.permissions;
+      }
       this.editingWidget.width = Number(this.editingWidget.width);
       this.editingWidget.height = Number(this.editingWidget.height);
       ipcRenderer.send("create-or-edit-widget", this.editingWidget);
@@ -129,6 +132,9 @@ new Vue({
         if (this.editingWidget.url === undefined) {
           this.editingWidget.url = "";
         }
+        if (this.editingWidget.permissions === undefined) {
+          this.editingWidget.permissions = {};
+        }
         creatingNewWidget = false;
       } else {
         this.editingWidget = {
@@ -143,7 +149,7 @@ new Vue({
           touchEnabled: undefined, //TODO should be removed on save if still undefined
           forceInCurrentTab: undefined,
           customUserAgent: [],
-          permissions: [],
+          permissions: {},
           customScript: undefined,
           devTools: undefined,
         };
