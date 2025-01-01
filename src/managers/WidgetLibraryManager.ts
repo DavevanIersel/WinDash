@@ -54,7 +54,7 @@ export class WidgetLibraryManager {
       },
     });
 
-    this.libraryWindow.setAlwaysOnTop(true, "floating");
+    this.libraryWindow.setAlwaysOnTop(true, "normal");
     this.loadLibrary();
 
     this.libraryWindow.on("resize", () => {
