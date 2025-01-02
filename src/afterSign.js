@@ -23,7 +23,7 @@ exports.default = function (context) {
       execSync
     } = require('child_process')
     console.log('VMP signing start')
-    execSync('python -m castlabs_evs.vmp sign-pkg ./build/win-unpacked/')
+    execSync('python -m castlabs_evs.vmp sign-pkg ./release/win-unpacked/')
     console.log('VMP signing complete')
   }
 }
