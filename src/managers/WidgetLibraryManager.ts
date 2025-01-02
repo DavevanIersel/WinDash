@@ -24,22 +24,20 @@ export class WidgetLibraryManager {
   private previewWidget: Widget | null = null;
   private widgetFileSystemService: WidgetFileSystemService;
 
-  constructor(widgetFileSystemService: WidgetFileSystemService) {
+  constructor(display: number, widgetFileSystemService: WidgetFileSystemService) {
     this.widgetFileSystemService = widgetFileSystemService;
 
     ipcMain.on("toggle-library", () => {
       if (this.libraryWindow) {
         this.libraryWindow.close();
       } else {
-        this.createLibraryWindow();
+        this.createLibraryWindow(display);
       }
     });
   }
 
-  public createLibraryWindow() {
-    const displays = screen.getAllDisplays();
-    const secondDisplay = displays[2];
-    const { x, y } = secondDisplay.bounds;
+  public createLibraryWindow(display: number) {
+    const { x, y } = screen.getAllDisplays()[display].bounds;
 
     this.libraryWindow = new BrowserWindow({
       width: 1200,

@@ -1,9 +1,11 @@
-import { app, components, session } from "electron";
+import { app, components } from "electron";
 import { WindowManager } from "./WindowManager";
 import { TrayManager } from "./TrayManager";
 import { WidgetManager } from "./WidgetManager";
 import { WidgetLibraryManager } from "./WidgetLibraryManager";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
+
+const DISPLAY = 2;
 
 export class AppManager {
   private windowManager: WindowManager;
@@ -18,7 +20,7 @@ export class AppManager {
     this.trayManager = new TrayManager();
     this.widgetFileSystemService = new WidgetFileSystemService();
     this.widgetManager = new WidgetManager(this.windowManager, this.widgetFileSystemService);
-    this.widgetLibraryManager = new WidgetLibraryManager(this.widgetFileSystemService);
+    this.widgetLibraryManager = new WidgetLibraryManager(DISPLAY, this.widgetFileSystemService);
   }
 
   public async initialize() {
@@ -29,7 +31,7 @@ export class AppManager {
     await app.whenReady();
     await components.whenReady();
 
-    this.windowManager.createMainWindow();
+    this.windowManager.createMainWindow(DISPLAY);
     this.trayManager.initialize(this.windowManager.getMainWindow());
     this.widgetManager.initializeWidgets();
 

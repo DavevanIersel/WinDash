@@ -4,10 +4,8 @@ import * as path from "path";
 export class WindowManager {
   private mainWindow: BrowserWindow | null = null;
 
-  public createMainWindow() {
-    const displays = screen.getAllDisplays();
-    const secondDisplay = displays[2];
-    const { x, y } = secondDisplay.bounds;
+  public createMainWindow(display: number) {
+    const { x, y } = screen.getAllDisplays()[display].bounds;
 
     this.mainWindow = new BrowserWindow({
       width: 1920,
