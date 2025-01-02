@@ -22,6 +22,10 @@ export class AppManager {
   }
 
   public async initialize() {
+    app.setLoginItemSettings({
+      openAtLogin: true,
+      path: app.getPath("exe")
+  });
     await app.whenReady();
     await components.whenReady();
 

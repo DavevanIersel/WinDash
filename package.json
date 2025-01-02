@@ -5,6 +5,7 @@
   "build": {
     "appId": "com.example.app",
     "productName": "WinDash",
+    "afterSign": "./src/afterSign.js",
     "win": {
       "icon": "assets/WinDash-logo.png",
       "target": [
@@ -27,7 +28,7 @@
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",
-    "dist": "npm run build && electron-builder && python -m castlabs_evs.vmp sign-pkg ./build/win-unpacked/"
+    "dist": "npm run build && electron-builder"
   },
   "keywords": [],
   "author": "",
