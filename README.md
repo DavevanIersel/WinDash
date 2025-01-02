@@ -1,18 +1,11 @@
 
 # WinDash
 
-**WinDash** is a Windows desktop dashboard management tool designed to enhance productivity and customization. It allows users to manage dashboards featuring either:
-
-- **Custom Web Widgets**: Embed web-based widgets using URLs.
-- **HTML + JS + CSS Widgets**: Create and add your own widgets using simple web technologies.
-
----
-
-## Features
+**WinDash** is a Windows desktop dashboard management tool designed to enhance productivity and customization.
 
 - **Custom Widgets**: Add widgets directly from external web URLs or design your own with HTML, JavaScript, and CSS.
-- **Built for Windows**: Optimized for Windows environments with a seamless desktop integration.
-- **Modern Stack**: Built using Electron, TypeScript, and popular libraries like Konva and lodash.
+- **Built for Windows**: Optimized for Windows environments, no support for mac or linux yet.
+- **Stack**: Built using Electron and Typescript
 
 ---
 
@@ -70,25 +63,13 @@ The packaged application will be available in the `build` directory.
 - `npm run dist`: Build the application for distribution.
 
 ### Adding Custom Widgets
-1. Create a new folder in `src/widgets` for your widget.
-2. Add the following files to your folder:
-   - **HTML**: The widget's structure.
-   - **CSS**: Styles for the widget.
-   - **JavaScript**: Logic and interactivity.
-3. Ensure your widget is included during the build process (handled automatically).
+Widgets can be created through the application UI and will be saved in `%AppData%/WinDash/widgets`. The repository contains multiple widgets you could use if you wish.
 
 ### Development Tips
 - Use `npm run watch` to recompile changes instantly.
 - Test widgets by adding them to the appropriate dashboard during runtime.
 
----
-
-## License
-This project is licensed under the ISC License. See the `LICENSE` file for details.
-
----
-
 Happy dashboarding with **WinDash**!
 
-Special thanks to [ChatGPT](https://chatgpt.com/) for generating this readme 
+Special thanks to [ChatGPT](https://chatgpt.com/) for generating this readme :) 
 ```
