@@ -1,0 +1,86 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.22/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css"
+    />
+    <title>Display Settings</title>
+  </head>
+  <body class="p-3">
+    <div id="app">
+      <form @submit.prevent="saveSettings">
+        <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">
+          Display Settings
+        </h1>
+
+        <div
+          id="display-container"
+          class="p-4 mx-12 relative overflow-hidden"
+          style="height: 250px"
+        >
+          <div
+            v-for="display in displays"
+            :key="display.id"
+            class="absolute border cursor-pointer"
+            :style="{
+            left: (display.bounds.x * scaleFactor + offsetX) + 'px',
+            top: (display.bounds.y * scaleFactor + offsetY) + 'px',
+            width: (display.bounds.width * scaleFactor) + 'px',
+            height: (display.bounds.height * scaleFactor) + 'px',
+            background: display.id === newSettings.displayId ? '#4A90E2' : '#999'
+          }"
+            @click="selectDisplay(display.id)"
+          ></div>
+        </div>
+
+        <div
+          v-if="newSettings.displayId"
+          class="mt-4 border p-4 rounded-lg bg-gray-100 dark:bg-gray-800"
+        >
+          <h2 class="text-lg font-semibold">{{ getDisplayById(newSettings.displayId).label }}</h2>
+
+          <label for="resolution" class="block mt-2">Resolution:</label>
+          <select
+            id="resolution"
+            v-model="newSettings.displayResolution"
+            class="border p-2 w-full"
+            @change="formChanged($event)"
+          >
+            <option
+              v-for="res in commonResolutions"
+              :key="`${res.width}x${res.height}`"
+              :value="res"
+            >
+              {{ res.width }} × {{ res.height }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex justify-end mt-4">
+          <button
+            :disabled="!edited"
+            type="button"
+            class="btn btn-neutral"
+            @click="loadInitialSettings"
+          >
+            Cancel
+          </button>
+          <button :disabled="!edited" type="submit" class="btn btn-success">
+            Save changes
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.min.js"></script>
+    <script src="./settings.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </body>
+</html>

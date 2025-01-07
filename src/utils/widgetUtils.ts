@@ -15,6 +15,7 @@ export function createView(widget: Widget): WebContentsView {
   return new WebContentsView({
     webPreferences: {
       partition: `${SESSION_PREFIX}${widget.id}`,
+      transparent: true, //TODO: make configurable per widget
     },
   });
 }
@@ -38,9 +39,18 @@ export function addScript(view: WebContentsView, widget: Widget) {
 }
 
 export async function addAdblocker(widget: Widget) {
-  const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
-  blocker.enableBlockingInSession(session.fromPartition(`${SESSION_PREFIX}${widget.id}`));
+  try {
+    const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
+    blocker.enableBlockingInSession(session.fromPartition(`${SESSION_PREFIX}${widget.id}`));
+  } catch (error) {
+    if (error.message && error.message.includes('@ghostery/adblocker/inject-cosmetic-filters')) {
+      // Seems to not be an actual issue, ads are still being blocked for each individual widget
+    } else {
+      console.error('Error initializing adblocker:', error);
+    }
+  }
 }
+
 
 export function setPermissionHandler(window: BrowserWindow, widget: Widget) {
   const widgetSession = session.fromPartition(`${SESSION_PREFIX}${widget.id}`);
@@ -147,7 +157,6 @@ export function forceInCurrentTab(view: WebContentsView, widget: Widget) {
     return;
 
   const handleWindowOpen = ({ url }: { url: string }) => {
-    console.log(url);
     if (widget.forceInCurrentTab.some((part) => url.includes(part))) {
       view.webContents.loadURL(url);
       return { action: "deny" as "deny" | "allow" };
@@ -156,7 +165,6 @@ export function forceInCurrentTab(view: WebContentsView, widget: Widget) {
   };
 
   const handleWillNavigate = (event: Electron.Event, url: string) => {
-    console.log(url);
     if (widget.forceInCurrentTab.some((part) => url.includes(part))) {
       event.preventDefault();
       view.webContents.loadURL(url);

@@ -14,6 +14,7 @@ import {
   setZoomFactor,
   addAdblocker,
 } from "../utils/widgetUtils.js";
+import { getSettings } from "../utils/settingsUtils";
 
 const PREVIEW_PANE_PADDING = 10;
 const PREVIEW_PANE_WIDTH_PERCENTAGE = 0.6;
@@ -24,26 +25,28 @@ export class WidgetLibraryManager {
   private previewWidget: Widget | null = null;
   private widgetFileSystemService: WidgetFileSystemService;
 
-  constructor(display: number, widgetFileSystemService: WidgetFileSystemService) {
+  constructor(
+    widgetFileSystemService: WidgetFileSystemService
+  ) {
     this.widgetFileSystemService = widgetFileSystemService;
 
     ipcMain.on("toggle-library", () => {
       if (this.libraryWindow) {
         this.libraryWindow.close();
       } else {
-        this.createLibraryWindow(display);
+        this.createLibraryWindow();
       }
     });
   }
 
-  public createLibraryWindow(display: number) {
-    const { x, y } = screen.getAllDisplays()[display].bounds;
+  public createLibraryWindow() {
+    const settings = getSettings();
 
     this.libraryWindow = new BrowserWindow({
       width: 1200,
       height: 800,
-      x,
-      y,
+      x: settings.displayX,
+      y: settings.displayY,
       skipTaskbar: true,
       frame: true,
       webPreferences: {

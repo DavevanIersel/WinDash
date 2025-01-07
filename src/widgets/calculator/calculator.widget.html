@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calculator</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        html, body {
+          background: none !important;
+        }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        input {
+            outline: none;
+            border: none;
+        }
+        input {
+            box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15),
+                        -1px -1px 10px rgba(0, 0, 0, 0.15);
+        }
+        .calculator {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        input:not(.text) {
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            margin: 5px;
+            font-size: 24px;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+        input:hover:not(.text, .op) {
+            background-color: black;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .op {
+            color: blueviolet;
+        }
+        .op:hover {
+            background-color: black;
+            color: blueviolet;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .output .text {
+            width: 100%;
+            height: 70px;
+            padding: 0 20px 0 0;
+            margin-bottom: 15px;
+            text-align: right;
+            font-size: 30px;
+            border-radius: 50px;
+        }
+        .calculator .equal {
+            width: 155px;
+            border-radius: 20%;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="output">
+            <input type="text" class="text" value="" placeholder="0" readonly>
+        </div>
+        <div>
+            <input type="button" value="AC" class="op AC">
+            <input type="button" value="DEL" class="op DEL">
+            <input type="button" value="%" class="op val">
+            <input type="button" value="/" class="op val">
+        </div>
+        <div>
+            <input type="button" value="7" class="val">
+            <input type="button" value="8" class="val">
+            <input type="button" value="9" class="val">
+            <input type="button" value="*" class="op val">
+        </div>
+        <div>
+            <input type="button" value="4" class="val">
+            <input type="button" value="5" class="val">
+            <input type="button" value="6" class="val">
+            <input type="button" value="-" class="op val">
+        </div>
+        <div>
+            <input type="button" value="1" class="val">
+            <input type="button" value="2" class="val">
+            <input type="button" value="3" class="val">
+            <input type="button" value="+" class="op val">
+        </div>
+        <div>
+            <input type="button" value="." class="op val">
+            <input type="button" value="0" class="val">
+            <input type="button" value="=" class="equal op">
+        </div>
+        <!-- New Scientific Function Buttons -->
+        <div>
+            <input type="button" value="^" class="op val"> <!-- Exponentiation -->
+            <input type="button" value="√" class="op val"> <!-- Square Root -->
+            <input type="button" value="sin" class="op val">
+            <input type="button" value="cos" class="op val">
+        </div>
+        <div>
+            <input type="button" value="tan" class="op val">
+            <input type="button" value="log" class="op val">
+            <input type="button" value="(" class="op val">
+            <input type="button" value=")" class="op val">
+        </div>
+    </div>
+    <script>
+        const outputEl = document.querySelector(".text");
+        const valEl = document.querySelectorAll(".val");
+        const ClearEl = document.querySelector(".AC");
+        const deleteEl = document.querySelector(".DEL");
+        const equalEl = document.querySelector(".equal");
+
+        let expression = "";
+
+        // Append button values to display
+        valEl.forEach((val) => {
+            val.addEventListener("click", () => {
+                let value = val.value;
+                
+                if (value === "^") {
+                    expression += "**";
+                    outputEl.value += "^";
+                } else if (value === "√") {
+                    expression += "Math.sqrt(";
+                    outputEl.value += "√(";
+                } else if (value === "sin") {
+                    expression += "Math.sin(";
+                    outputEl.value += "sin(";
+                } else if (value === "cos") {
+                    expression += "Math.cos(";
+                    outputEl.value += "cos(";
+                } else if (value === "tan") {
+                    expression += "Math.tan(";
+                    outputEl.value += "tan(";
+                } else if (value === "log") {
+                    expression += "Math.log10(";
+                    outputEl.value += "log(";
+                } else {
+                    expression += value;
+                    outputEl.value += value;
+                }
+            });
+        });
+
+        // Clear display
+        ClearEl.addEventListener("click", () => {
+            expression = "";
+            outputEl.value = "";
+        });
+
+        // Delete last character
+        deleteEl.addEventListener("click", () => {
+            expression = expression.slice(0, -1);
+            outputEl.value = outputEl.value.slice(0, -1);
+        });
+
+        // Auto-fix missing closing parentheses
+        function balanceBrackets(exp) {
+            let openBrackets = (exp.match(/\(/g) || []).length;
+            let closeBrackets = (exp.match(/\)/g) || []).length;
+            return exp + ")".repeat(openBrackets - closeBrackets);
+        }
+
+        // Evaluate expression
+        equalEl.addEventListener("click", () => {
+            try {
+                let balancedExpression = balanceBrackets(expression);
+                let result = eval(balancedExpression);
+                outputEl.value = result;
+                expression = result.toString(); // Store result for further operations
+            } catch (e) {
+                alert("Syntax Error");
+                expression = "";
+                outputEl.value = "";
+            }
+        });
+    </script>
+</body>
+</html>
