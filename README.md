@@ -72,4 +72,3 @@ Widgets can be created through the application UI and will be saved in `%AppData
 Happy dashboarding with **WinDash**!
 
 Special thanks to [ChatGPT](https://chatgpt.com/) for generating this readme :) 
-```
