@@ -5,6 +5,7 @@ import { WidgetManager } from "./WidgetManager";
 import { WidgetLibraryManager } from "./WidgetLibraryManager";
 import WidgetFileSystemService from "../services/WidgetFileSystemService";
 import { SettingsManager } from "./SettingsManager";
+import { getSettings } from "../utils/settingsUtils";
 
 export class AppManager {
   private windowManager: WindowManager;
@@ -32,9 +33,20 @@ export class AppManager {
     await app.whenReady();
     await components.whenReady();
 
-    this.windowManager.createMainWindow();
+    const settings = getSettings();
+
+    this.windowManager.createMainWindow({
+      x: settings.displayX,
+      y: settings.displayY,
+      width: settings.displayResolution.width,
+      height: settings.displayResolution.height
+    });
     this.trayManager.initialize(this.windowManager.getMainWindow(), this.settingsManager);
     this.widgetManager.initializeWidgets();
+
+    if (settings.firstLaunch) {
+      this.settingsManager.createSettingsWindow();
+    }
 
     app.on("window-all-closed", this.onAllWindowsClosed);
   }

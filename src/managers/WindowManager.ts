@@ -1,18 +1,15 @@
-import { BrowserWindow, ipcMain, screen } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
-import { getSettings } from "../utils/settingsUtils";
 
 export class WindowManager {
   private mainWindow: BrowserWindow | null = null;
 
-  public createMainWindow() {
-    const settings = getSettings();
-    
+  public createMainWindow(bounds: Electron.Rectangle) {
     this.mainWindow = new BrowserWindow({
-      width: settings.displayResolution.width,
-      height: settings.displayResolution.height,
-      x: settings.displayX,
-      y: settings.displayY,
+      width: bounds.width,
+      height: bounds.height,
+      x: bounds.x,
+      y: bounds.y,
       icon: "./src/assets/WinDash-logo.png",
       transparent: true,
       skipTaskbar: true,

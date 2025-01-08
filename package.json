@@ -1,9 +1,8 @@
 {
   "name": "win-dash",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Windows desktop dashboard management tool",
   "build": {
-    "appId": "com.example.app",
     "productName": "WinDash",
     "afterSign": "./src/afterSign.js",
     "win": {
@@ -29,9 +28,6 @@
     "start": "npm run build && electron ./dist/main.js",
     "dist": "npm run build && electron-builder"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
