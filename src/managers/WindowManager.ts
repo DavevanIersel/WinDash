@@ -61,6 +61,10 @@ export class WindowManager {
     });
   }
 
+  public moveWindow(bounds: Electron.Rectangle) {
+    this.mainWindow.setBounds(bounds)
+  }
+
   public getMainWindow() {
     return this.mainWindow;
   }

@@ -17,11 +17,11 @@ export class AppManager {
   constructor() {
     this.widgetFileSystemService = new WidgetFileSystemService();
     this.windowManager = new WindowManager();
-    this.settingsManager = new SettingsManager();
     this.trayManager = new TrayManager();
     this.widgetFileSystemService = new WidgetFileSystemService();
     this.widgetManager = new WidgetManager(this.windowManager, this.widgetFileSystemService);
     this.widgetLibraryManager = new WidgetLibraryManager(this.widgetFileSystemService);
+    this.settingsManager = new SettingsManager(this.windowManager);
   }
 
   public async initialize() {

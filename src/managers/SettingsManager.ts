@@ -2,9 +2,15 @@ import { BrowserWindow, ipcMain, screen } from "electron";
 import * as path from "path";
 import { Settings } from "../models/Settings";
 import { getSettings, saveSettings } from "../utils/settingsUtils";
+import { WindowManager } from "./WindowManager";
 
 export class SettingsManager {
   private settingsWindow: BrowserWindow | null = null;
+  private windowManager: WindowManager;
+
+  constructor(windowManager: WindowManager) {
+    this.windowManager = windowManager;
+  }
 
   public createSettingsWindow() {
     if (this.settingsWindow) {
@@ -40,6 +46,12 @@ export class SettingsManager {
 
     ipcMain.on("save-settings", (_event, settings: Settings) => {
       saveSettings(settings);
+      this.windowManager.moveWindow({
+        x: settings.displayX,
+        y: settings.displayY,
+        width: settings.displayResolution.width,
+        height: settings.displayResolution.height,
+      })
     });
 
     this.settingsWindow.on("closed", (): void => (this.settingsWindow = null));
