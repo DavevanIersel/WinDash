@@ -10,7 +10,7 @@ export class WindowManager {
       height: bounds.height,
       x: bounds.x,
       y: bounds.y,
-      icon: "./src/assets/WinDash-logo.png",
+      icon: "./src/assets/logo.ico",
       transparent: true,
       skipTaskbar: true,
       frame: false,

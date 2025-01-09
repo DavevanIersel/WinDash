@@ -6,7 +6,7 @@ export class TrayManager {
   private tray: Tray | null = null;
 
   public initialize(mainWindow: BrowserWindow | null, settingsManager: SettingsManager) {
-    this.tray = new Tray(path.join(__dirname, "../assets/WinDash-logo.png"));
+    this.tray = new Tray(path.join(__dirname, "../assets/logo.ico"));
     const contextMenu = Menu.buildFromTemplate([
       {
         label: "Show App",
