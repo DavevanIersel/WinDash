@@ -6,7 +6,7 @@
     "productName": "WinDash",
     "afterSign": "./src/afterSign.js",
     "win": {
-      "icon": "assets/WinDash-logo.png",
+      "icon": "./src/assets/logo.ico",
       "target": [
         "nsis"
       ]

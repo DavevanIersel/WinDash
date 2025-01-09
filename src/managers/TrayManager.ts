@@ -11,7 +11,7 @@ export class TrayManager {
     widgetLibraryManager: WidgetLibraryManager,
     settingsManager: SettingsManager
   ) {
-    this.tray = new Tray(path.join(__dirname, "../assets/logo.ico"));
+    this.tray = new Tray(path.join(__dirname, "../assets/logo96x96.ico"));
     const contextMenu = Menu.buildFromTemplate([
       {
         label: "Edit Widgets",

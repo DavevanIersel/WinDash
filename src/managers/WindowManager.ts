@@ -10,7 +10,7 @@ export class WindowManager {
       height: bounds.height,
       x: bounds.x,
       y: bounds.y,
-      icon: "./src/assets/logo.ico",
+      icon: "./src/assets/logo96x96.ico",
       transparent: true,
       skipTaskbar: true,
       frame: false,
