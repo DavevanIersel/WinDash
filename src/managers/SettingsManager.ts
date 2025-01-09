@@ -4,6 +4,8 @@ import { Settings } from "../models/Settings";
 import { getSettings, saveSettings } from "../utils/settingsUtils";
 import { WindowManager } from "./WindowManager";
 
+const SETTINGS_PAGE = "../views/settings/settings.html";
+
 export class SettingsManager {
   private settingsWindow: BrowserWindow | null = null;
   private windowManager: WindowManager;
@@ -37,7 +39,7 @@ export class SettingsManager {
 
     this.settingsWindow.setAlwaysOnTop(true, "normal");
     this.settingsWindow.loadFile(
-      path.join(__dirname, "../views/settings.html")
+      path.join(__dirname, SETTINGS_PAGE)
     );
 
     this.settingsWindow.webContents.once("did-finish-load", () => {

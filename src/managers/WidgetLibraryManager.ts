@@ -16,6 +16,8 @@ import {
 } from "../utils/widgetUtils.js";
 import { getSettings } from "../utils/settingsUtils";
 
+const LIBRARY_PAGE = "../views/library/library.html";
+const EDIT_WIDGET_PAGE = "../views/edit-widget/edit-widget.html";
 const PREVIEW_PANE_PADDING = 10;
 const PREVIEW_PANE_WIDTH_PERCENTAGE = 0.6;
 
@@ -86,7 +88,7 @@ export class WidgetLibraryManager {
       (_event, enable: boolean, widget?: Widget) => {
         if (enable) {
           this.libraryWindow.loadFile(
-            path.join(__dirname, "../views/edit-widget.html")
+            path.join(__dirname, EDIT_WIDGET_PAGE)
           );
           this.libraryWindow.webContents.once("did-finish-load", () => {
             this.libraryWindow?.webContents.send(
@@ -113,7 +115,7 @@ export class WidgetLibraryManager {
   }
 
   public loadLibrary() {
-    this.libraryWindow.loadFile(path.join(__dirname, "../views/library.html"));
+    this.libraryWindow.loadFile(path.join(__dirname, LIBRARY_PAGE));
     this.libraryWindow.webContents.once("did-finish-load", () => {
       this.reloadWidgets();
     });
