@@ -22,6 +22,7 @@ const PREVIEW_PANE_PADDING = 10;
 const PREVIEW_PANE_WIDTH_PERCENTAGE = 0.6;
 
 export class WidgetLibraryManager {
+  private mainWindow: BrowserWindow;
   private libraryWindow: BrowserWindow | null = null;
   private previewView: WebContentsView | null = null;
   private previewWidget: Widget | null = null;
@@ -29,14 +30,18 @@ export class WidgetLibraryManager {
 
   constructor(widgetFileSystemService: WidgetFileSystemService) {
     this.widgetFileSystemService = widgetFileSystemService;
+  }
 
-    ipcMain.on("toggle-library", () => {
-      if (this.libraryWindow) {
-        this.libraryWindow.close();
-      } else {
-        this.createLibraryWindow();
-      }
-    });
+  public setMainWindow(mainWindow: BrowserWindow) {
+    this.mainWindow = mainWindow;
+  }
+
+  public openLibraryWindow() {
+    if (this.libraryWindow) {
+      this.libraryWindow.show();
+    } else {
+      this.createLibraryWindow();
+    }
   }
 
   public createLibraryWindow() {
@@ -61,6 +66,10 @@ export class WidgetLibraryManager {
 
     this.libraryWindow.setAlwaysOnTop(true, "normal");
     this.loadLibrary();
+    
+    this.mainWindow?.webContents.send(
+      "start-drag-and-drop"
+    );
 
     this.libraryWindow.on("resize", () => {
       if (this.previewWidget) {
@@ -71,7 +80,10 @@ export class WidgetLibraryManager {
       }
     });
 
-    this.libraryWindow.on("closed", (): void => (this.libraryWindow = null));
+    this.libraryWindow.on("closed", (): void => {
+      this.mainWindow?.webContents.send("stop-drag-and-drop");
+      this.libraryWindow = null
+    });
 
     this.widgetFileSystemService.on("reload-widget", (_widget: Widget) => {
       this.reloadWidgets();

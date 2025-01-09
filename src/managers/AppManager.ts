@@ -41,7 +41,9 @@ export class AppManager {
       width: settings.displayResolution.width,
       height: settings.displayResolution.height
     });
-    this.trayManager.initialize(this.windowManager.getMainWindow(), this.settingsManager);
+
+    this.widgetLibraryManager.setMainWindow(this.windowManager.getMainWindow());
+    this.trayManager.initialize(this.windowManager.getMainWindow(), this.widgetLibraryManager, this.settingsManager);
     this.widgetManager.initializeWidgets();
 
     if (settings.firstLaunch) {

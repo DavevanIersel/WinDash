@@ -8,15 +8,6 @@ const Konva = require("konva");
 const { gridSize } = require("./utils/gridUtils");
 const moveHandleSize = 20;
 
-const devtoolsButton = document.getElementById("toggle-devtools");
-let isDevToolsOpen = false;
-
-const librarybutton = document.getElementById("toggle-library");
-
-const settingsButton = document.getElementById("settings-button");
-const settingsCheckbox = document.getElementById(
-  "settings-input"
-) as HTMLInputElement;
 let isEditing = false;
 
 /** @type {import('./models/Position').Position} */
@@ -24,48 +15,30 @@ let widgetPositions = new Map();
 
 let widgetIdToKonvaGroupMap = new Map();
 
-if (devtoolsButton) {
-  devtoolsButton.addEventListener("click", () => {
-    ipcRenderer.send("toggle-devtools", isDevToolsOpen);
-  });
-
-  ipcRenderer.on("devtools-status", (_event, openedState) => {
-    isDevToolsOpen = openedState;
-  });
-}
-
-if (librarybutton) {
-  librarybutton.addEventListener("click", () => {
-    ipcRenderer.send("toggle-library");
-  });
-}
-
-if (settingsButton) {
-  settingsButton.addEventListener("click", () => {
-    isEditing = !isEditing;
-    settingsCheckbox.checked = isEditing;
-    const gridStack = document.getElementById("grid-stack");
-    if (gridStack) {
-      gridStack.style.display = isEditing ? "block" : "none";
-    }
-    if (devtoolsButton) {
-      devtoolsButton.style.display = isEditing ? "inline-flex" : "none";
-    }
-    if (librarybutton) {
-      librarybutton.style.display = isEditing ? "inline-flex" : "none";
-    }
-    if (!isEditing) {
-      ipcRenderer.send("update-widget-positions", widgetPositions, true);
-    }
-  });
-}
-
 //Grid systems
 document.addEventListener("DOMContentLoaded", () => {
   const stage = new Konva.Stage({
     container: "grid-stack",
     width: 1920, // offsetwidth still to fix
     height: 1080, // offset height fix
+  });
+  
+  ipcRenderer.on("start-drag-and-drop", () => {
+    console.log(" hia")
+    isEditing = true;
+    const gridStack = document.getElementById("grid-stack");
+    if (gridStack) {
+      gridStack.style.display = "block";
+    }
+  });
+
+  ipcRenderer.on("stop-drag-and-drop", () => {
+    isEditing = false;
+    const gridStack = document.getElementById("grid-stack");
+    if (gridStack) {
+      gridStack.style.display = "none";
+    }
+    ipcRenderer.send("update-widget-positions", widgetPositions, true);
   });
 
   const layer = new Konva.Layer();

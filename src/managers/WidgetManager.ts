@@ -1,4 +1,4 @@
-import { WebContentsView, session } from "electron";
+import { WebContentsView } from "electron";
 import { Widget } from "../models/Widget";
 import { WindowManager } from "./WindowManager";
 import { Position } from "../models/Position";

@@ -34,18 +34,6 @@ export class WindowManager {
       this.mainWindow?.close();
     });
 
-    ipcMain.on("toggle-devtools", (event) => {
-      if (this.mainWindow.webContents.isDevToolsOpened()) {
-        this.mainWindow.webContents.closeDevTools();
-      } else {
-        this.mainWindow.webContents.openDevTools({ mode: "detach" });
-      }
-      event.reply(
-        "devtools-status",
-        this.mainWindow.webContents.isDevToolsOpened()
-      );
-    });
-
     // Handle pass through when clicking on transparent parts of the window (called by preload.ts)
     ipcMain.on("set-click-through", (_event, shouldPassThrough: boolean) => {
       if (this.mainWindow) {
