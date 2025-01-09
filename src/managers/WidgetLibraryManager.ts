@@ -27,9 +27,7 @@ export class WidgetLibraryManager {
   private previewWidget: Widget | null = null;
   private widgetFileSystemService: WidgetFileSystemService;
 
-  constructor(
-    widgetFileSystemService: WidgetFileSystemService
-  ) {
+  constructor(widgetFileSystemService: WidgetFileSystemService) {
     this.widgetFileSystemService = widgetFileSystemService;
 
     ipcMain.on("toggle-library", () => {
@@ -87,9 +85,7 @@ export class WidgetLibraryManager {
       "toggle-edit-widget-view",
       (_event, enable: boolean, widget?: Widget) => {
         if (enable) {
-          this.libraryWindow.loadFile(
-            path.join(__dirname, EDIT_WIDGET_PAGE)
-          );
+          this.libraryWindow.loadFile(path.join(__dirname, EDIT_WIDGET_PAGE));
           this.libraryWindow.webContents.once("did-finish-load", () => {
             this.libraryWindow?.webContents.send(
               "load-widget-for-edit",

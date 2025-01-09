@@ -5,6 +5,7 @@ import { getExplicitPermissions } from "./permissionUtils";
 import { Permission } from "../models/Permission";
 import { readFileSync } from "fs";
 import { ElectronBlocker } from "@ghostery/adblocker-electron";
+import { v4 as uuidv4 } from "uuid";
 
 const WIDGETS_DIR = "../widgets";
 const SESSION_PREFIX = "persist:";
@@ -12,9 +13,13 @@ const cssPath = join(__dirname, "../styles/widget-styles.css");
 const cssContent = readFileSync(cssPath, "utf-8");
 
 export function createView(widget: Widget): WebContentsView {
+  const partition = widget
+    ? `${SESSION_PREFIX}${widget.id}`
+    : `temporary:${uuidv4()}`;
+
   return new WebContentsView({
     webPreferences: {
-      partition: `${SESSION_PREFIX}${widget.id}`,
+      partition,
       transparent: true, //TODO: make configurable per widget
     },
   });
@@ -41,16 +46,20 @@ export function addScript(view: WebContentsView, widget: Widget) {
 export async function addAdblocker(widget: Widget) {
   try {
     const blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking(fetch);
-    blocker.enableBlockingInSession(session.fromPartition(`${SESSION_PREFIX}${widget.id}`));
+    blocker.enableBlockingInSession(
+      session.fromPartition(`${SESSION_PREFIX}${widget.id}`)
+    );
   } catch (error) {
-    if (error.message && error.message.includes('@ghostery/adblocker/inject-cosmetic-filters')) {
+    if (
+      error.message &&
+      error.message.includes("@ghostery/adblocker/inject-cosmetic-filters")
+    ) {
       // Seems to not be an actual issue, ads are still being blocked for each individual widget
     } else {
-      console.error('Error initializing adblocker:', error);
+      console.error("Error initializing adblocker:", error);
     }
   }
 }
-
 
 export function setPermissionHandler(window: BrowserWindow, widget: Widget) {
   const widgetSession = session.fromPartition(`${SESSION_PREFIX}${widget.id}`);
