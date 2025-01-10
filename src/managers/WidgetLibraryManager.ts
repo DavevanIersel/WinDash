@@ -81,6 +81,7 @@ export class WidgetLibraryManager {
     });
 
     this.libraryWindow.on("closed", (): void => {
+      this.removePreview();
       this.mainWindow?.webContents.send("stop-drag-and-drop");
       this.libraryWindow = null
     });
