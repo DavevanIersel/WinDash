@@ -7,6 +7,10 @@
 - **Built for Windows**: Optimized for Windows environments, no support for mac or linux yet.
 - **Stack**: Built using Electron and Typescript
 
+![image](https://github.com/user-attachments/assets/add30fa0-ccac-4239-a6c9-f2fd0a005548)
+![image](https://github.com/user-attachments/assets/e3197f7f-c46f-47ea-9cf1-88e07b750cf8)
+![image](https://github.com/user-attachments/assets/e83ff5ac-f941-41b7-badb-d80b814f4f17)
+
 ---
 
 ## Installation
