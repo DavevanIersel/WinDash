@@ -14,6 +14,7 @@ import {
   setWidgetWebContents,
   setZoomFactor,
   addAdblocker,
+  setupFunctionKeyShortcuts,
 } from "../utils/widgetUtils.js";
 
 const viewIdToWidgetMap = new Map<number, Widget>();
@@ -133,6 +134,7 @@ export class WidgetManager {
     });
     addAdblocker(widget);
     addScript(view, widget);
+    setupFunctionKeyShortcuts(view, this.windowManager.getMainWindow(), view.getBounds());
     setOnDidFinishLoadHandler(view, widget);
     setPermissionHandler(this.windowManager.getMainWindow(), widget);
     setCloseHandler(view, this.windowManager.getMainWindow());
@@ -244,3 +246,4 @@ export class WidgetManager {
       .webContents.send("remove-draggable-widget", widget);
   }
 }
+

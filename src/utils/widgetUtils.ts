@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, session, WebContentsView } from "electron";
+import { BrowserWindow, dialog, session, shell, WebContentsView } from "electron";
 import { Widget } from "../models/Widget";
 import { join } from "path";
 import { getExplicitPermissions } from "./permissionUtils";
@@ -125,6 +125,40 @@ export function setZoomFactor(view: WebContentsView, zoomFactor: number) {
 export function setCloseHandler(view: WebContentsView, window: BrowserWindow) {
   window.on("closed", () => {
     view.webContents?.close();
+  });
+}
+
+export function setupFunctionKeyShortcuts(
+  view: WebContentsView,
+  window: BrowserWindow,
+  initialViewBounds: Electron.Rectangle
+) {
+  if (!view) return;
+
+  const handler = (_event: Electron.Event, input: Electron.Input) => {
+    if (input.type !== "keyDown") return;
+
+    switch (input.key) {
+      case "F1":
+        _event.preventDefault();
+        shell.openExternal(view.webContents.getURL());
+        break;
+
+      case "F5":
+        _event.preventDefault();
+        view.webContents.reload();
+        break;
+
+      case "F12":
+        _event.preventDefault();
+        view.webContents.toggleDevTools();
+        break;
+    }
+  };
+
+  view.webContents.on("before-input-event", handler);
+  view.webContents.once("destroyed", () => {
+    view.webContents.removeListener("before-input-event", handler);
   });
 }
 
