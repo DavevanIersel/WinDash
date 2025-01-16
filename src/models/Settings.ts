@@ -5,5 +5,6 @@ export interface Settings {
         width: number,
         height: number
     },
-    firstLaunch: boolean;
+    firstLaunch: boolean,
+    autoStart: boolean,
 }             

@@ -17,6 +17,7 @@ export function getSettings(): Settings | null {
     return {
       displayBounds: primaryDisplay.bounds,
       firstLaunch: true,
+      autoStart: false,
     };
   }
 

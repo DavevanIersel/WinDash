@@ -19,9 +19,30 @@
         <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">Settings</h1>
 
         <h2 class="text-lg font-semibold">
+          General
+        </h2>
+        
+        <!-- Auto Start -->
+        <div class="flex items-center gap-2 mt-2">
+          <label class="label" for="autoStart">
+            <span class="label-text">Launch WinDash at startup</span>
+          </label>
+        
+          <input
+            type="checkbox"
+            id="autoStart"
+            class="toggle toggle-accent"
+            v-model="newSettings.autoStart"
+            @change="formChanged"
+          />
+        </div>
+        
+
+        <h2 class="text-lg font-semibold mt-5">
           Display: {{ getDisplayByBounds(newSettings.displayBounds)?.label }}
         </h2>
 
+        <!-- Display Settings -->
         <div
           id="display-container"
           class="p-4 mx-12 relative overflow-hidden"
@@ -42,6 +63,7 @@
           ></div>
         </div>
 
+        <!-- Form Buttons -->
         <div class="flex justify-end mt-4">
           <button
             :disabled="!edited"

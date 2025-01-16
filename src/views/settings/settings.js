@@ -6,9 +6,11 @@ new Vue({
     displays: [],
     initialSettings: {
       displayBounds: null,
+      autoStart: false,
     },
     newSettings: {
       displayBounds: null,
+      autoStart: false,
     },
     edited: false,
     scaleFactor: 1,
