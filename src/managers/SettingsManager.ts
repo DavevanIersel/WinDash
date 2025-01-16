@@ -25,8 +25,8 @@ export class SettingsManager {
     this.settingsWindow = new BrowserWindow({
       width: 1200,
       height: 800,
-      x: settings.displayX,
-      y: settings.displayY,
+      x: settings.displayBounds.x,
+      y: settings.displayBounds.y,
       skipTaskbar: true,
       frame: true,
       webPreferences: {
@@ -49,10 +49,10 @@ export class SettingsManager {
     ipcMain.on("save-settings", (_event, settings: Settings) => {
       saveSettings(settings);
       this.windowManager.moveWindow({
-        x: settings.displayX,
-        y: settings.displayY,
-        width: settings.displayResolution.width,
-        height: settings.displayResolution.height,
+        x: settings.displayBounds.x,
+        y: settings.displayBounds.y,
+        width: settings.displayBounds.width,
+        height: settings.displayBounds.height,
       })
     });
 

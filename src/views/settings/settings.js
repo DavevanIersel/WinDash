@@ -5,12 +5,10 @@ new Vue({
   data: {
     displays: [],
     initialSettings: {
-      displayId: null,
-      displayResolution: null,
+      displayBounds: null,
     },
     newSettings: {
-      displayId: null,
-      displayResolution: null,
+      displayBounds: null,
     },
     edited: false,
     scaleFactor: 1,
@@ -47,43 +45,49 @@ new Vue({
       this.offsetX = -minX * this.scaleFactor;
       this.offsetY = -minY * this.scaleFactor;
     },
-    loadInitialSettings() {
+    overwriteNewSettingsWithInitial() {
       this.newSettings = { ...this.initialSettings };
       this.edited = false;
     },
-    selectDisplay(displayId) {
-      this.newSettings.displayId = displayId;
-      const display = this.getDisplayById(this.newSettings.displayId);
-      if (!display) return;
-
-      const nativeRes = {
-        width: display.bounds.width,
-        height: display.bounds.height,
-      };
-
-      this.updateCommonResolutions(nativeRes);
-
-      this.newSettings.displayResolution = nativeRes;
-      this.newSettings.displayX = display.bounds.x;
-      this.newSettings.displayY = display.bounds.y;
-      this.edited = true;
+    isSelectedDisplay(bounds) {
+      return (
+        this.newSettings.displayBounds &&
+        bounds.x === this.newSettings.displayBounds.x &&
+        bounds.y === this.newSettings.displayBounds.y &&
+        bounds.width === this.newSettings.displayBounds.width &&
+        bounds.height === this.newSettings.displayBounds.height
+      );
     },
-    updateCommonResolutions(resolution) {
+    selectDisplay(bounds) {
+      this.newSettings.displayBounds = bounds;
+      this.updateCommonResolutions(bounds);
+      this.formChanged();
+    },
+    updateCommonResolutions(bounds) {
       if (
         !this.commonResolutions.find(
           (res) =>
-            res.width === resolution.width && res.height === resolution.height
+            res.width === bounds.width && res.height === bounds.height
         )
       ) {
-        this.commonResolutions.unshift(resolution);
+        this.commonResolutions.unshift({
+          width: bounds.width,
+          height: bounds.height,
+        });
       }
     },
     formChanged() {
       this.edited = true;
     },
-    getDisplayById(id) {
-      if (!id) return null;
-      return this.displays.find((d) => d.id === id);
+    getDisplayByBounds(bounds) {
+      if (!bounds) return null;
+      return this.displays.find(
+        (d) =>
+          d.bounds.x === bounds.x &&
+          d.bounds.y === bounds.y &&
+          d.bounds.width === bounds.width &&
+          d.bounds.height === bounds.height
+      );
     },
     saveSettings() {
       this.initialSettings = { ...this.newSettings };
@@ -91,18 +95,15 @@ new Vue({
       ipcRenderer.send("save-settings", this.newSettings);
     },
   },
+  
   mounted() {
-    ipcRenderer.on(
-      "update-settings",
-      (_event, settings, screens) => {
-        this.displays = screens;
-        this.computeScaling();
+    ipcRenderer.on("update-settings", (_event, settings, screens) => {
+      this.displays = screens;
+      this.computeScaling();
+      this.updateCommonResolutions(settings.displayBounds);
 
-        this.initialSettings = settings;
-        this.updateCommonResolutions(this.initialSettings.displayResolution);
-
-        this.loadInitialSettings();
-      }
-    );
+      this.initialSettings = settings;
+      this.overwriteNewSettingsWithInitial();
+    });
   },
 });

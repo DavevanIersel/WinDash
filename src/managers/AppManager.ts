@@ -35,12 +35,7 @@ export class AppManager {
 
     const settings = getSettings();
 
-    this.windowManager.createMainWindow({
-      x: settings.displayX,
-      y: settings.displayY,
-      width: settings.displayResolution.width,
-      height: settings.displayResolution.height
-    });
+    this.windowManager.createMainWindow(settings.displayBounds);
 
     this.widgetLibraryManager.setMainWindow(this.windowManager.getMainWindow());
     this.trayManager.initialize(this.windowManager.getMainWindow(), this.widgetLibraryManager, this.settingsManager);
