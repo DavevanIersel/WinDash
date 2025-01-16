@@ -20,30 +20,36 @@ export class AppManager {
     this.windowManager = new WindowManager();
     this.trayManager = new TrayManager();
     this.widgetFileSystemService = new WidgetFileSystemService();
-    this.widgetManager = new WidgetManager(this.windowManager, this.widgetFileSystemService);
-    this.widgetLibraryManager = new WidgetLibraryManager(this.widgetFileSystemService);
+    this.widgetManager = new WidgetManager(
+      this.windowManager,
+      this.widgetFileSystemService
+    );
+    this.widgetLibraryManager = new WidgetLibraryManager(
+      this.widgetFileSystemService
+    );
     this.settingsManager = new SettingsManager(this.windowManager);
   }
 
   public async initialize() {
-    app.setLoginItemSettings({
-      openAtLogin: true,
-      path: app.getPath("exe")
-  });
     await app.whenReady();
     await components.whenReady();
 
     const settings = getSettings();
+    if (settings.autoStart) {
+      app.setLoginItemSettings({
+        openAtLogin: true,
+        path: app.getPath("exe"),
+      });
+    }
 
-    this.windowManager.createMainWindow({
-      x: settings.displayX,
-      y: settings.displayY,
-      width: settings.displayResolution.width,
-      height: settings.displayResolution.height
-    });
+    this.windowManager.createMainWindow(settings.displayBounds);
 
     this.widgetLibraryManager.setMainWindow(this.windowManager.getMainWindow());
-    this.trayManager.initialize(this.windowManager.getMainWindow(), this.widgetLibraryManager, this.settingsManager);
+    this.trayManager.initialize(
+      this.windowManager.getMainWindow(),
+      this.widgetLibraryManager,
+      this.settingsManager
+    );
     this.widgetManager.initializeWidgets();
 
     if (settings.firstLaunch) {

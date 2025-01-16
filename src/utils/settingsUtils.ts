@@ -15,14 +15,9 @@ export function getSettings(): Settings | null {
   if (!existsSync(settingsFilePath)) {
     const primaryDisplay = screen.getPrimaryDisplay();
     return {
-      displayId: primaryDisplay.id,
-      displayResolution: {
-        width: primaryDisplay.bounds.width,
-        height: primaryDisplay.bounds.height,
-      },
-      displayX: primaryDisplay.bounds.x,
-      displayY: primaryDisplay.bounds.y,
+      displayBounds: primaryDisplay.bounds,
       firstLaunch: true,
+      autoStart: false,
     };
   }
 

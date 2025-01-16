@@ -16,10 +16,33 @@
   <body class="p-3">
     <div id="app">
       <form @submit.prevent="saveSettings">
-        <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">
-          Display Settings
-        </h1>
+        <h1 class="mt-2 mb-4 text-2xl font-bold dark:text-white">Settings</h1>
 
+        <h2 class="text-lg font-semibold">
+          General
+        </h2>
+        
+        <!-- Auto Start -->
+        <div class="flex items-center gap-2 mt-2">
+          <label class="label" for="autoStart">
+            <span class="label-text">Launch WinDash at startup</span>
+          </label>
+        
+          <input
+            type="checkbox"
+            id="autoStart"
+            class="toggle toggle-accent"
+            v-model="newSettings.autoStart"
+            @change="formChanged"
+          />
+        </div>
+        
+
+        <h2 class="text-lg font-semibold mt-5">
+          Display: {{ getDisplayByBounds(newSettings.displayBounds)?.label }}
+        </h2>
+
+        <!-- Display Settings -->
         <div
           id="display-container"
           class="p-4 mx-12 relative overflow-hidden"
@@ -34,41 +57,19 @@
             top: (display.bounds.y * scaleFactor + offsetY) + 'px',
             width: (display.bounds.width * scaleFactor) + 'px',
             height: (display.bounds.height * scaleFactor) + 'px',
-            background: display.id === newSettings.displayId ? '#4A90E2' : '#999'
+            background: isSelectedDisplay(display.bounds) ? '#4A90E2' : '#999'
           }"
-            @click="selectDisplay(display.id)"
+            @click="selectDisplay(display.bounds)"
           ></div>
         </div>
 
-        <div
-          v-if="newSettings.displayId"
-          class="mt-4 border p-4 rounded-lg bg-gray-100 dark:bg-gray-800"
-        >
-          <h2 class="text-lg font-semibold">{{ getDisplayById(newSettings.displayId).label }}</h2>
-
-          <label for="resolution" class="block mt-2">Resolution:</label>
-          <select
-            id="resolution"
-            v-model="newSettings.displayResolution"
-            class="border p-2 w-full"
-            @change="formChanged($event)"
-          >
-            <option
-              v-for="res in commonResolutions"
-              :key="`${res.width}x${res.height}`"
-              :value="res"
-            >
-              {{ res.width }} × {{ res.height }}
-            </option>
-          </select>
-        </div>
-
+        <!-- Form Buttons -->
         <div class="flex justify-end mt-4">
           <button
             :disabled="!edited"
             type="button"
             class="btn btn-neutral"
-            @click="loadInitialSettings"
+            @click="overwriteNewSettingsWithInitial"
           >
             Cancel
           </button>

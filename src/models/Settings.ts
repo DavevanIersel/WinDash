@@ -1,10 +1,10 @@
 export interface Settings {
-    displayId: number;
-    displayResolution: {
+    displayBounds: {
+        x: number,
+        y: number,
         width: number,
         height: number
     },
-    displayX: number,
-    displayY: number,
-    firstLaunch: boolean;
+    firstLaunch: boolean,
+    autoStart: boolean,
 }             

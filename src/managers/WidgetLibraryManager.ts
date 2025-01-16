@@ -50,8 +50,8 @@ export class WidgetLibraryManager {
     this.libraryWindow = new BrowserWindow({
       width: 1200,
       height: 800,
-      x: settings.displayX,
-      y: settings.displayY,
+      x: settings.displayBounds.x,
+      y: settings.displayBounds.y,
       skipTaskbar: true,
       frame: true,
       webPreferences: {
